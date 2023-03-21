@@ -17,6 +17,8 @@ func DrawFrame() tcell.Screen {
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	defStyle = defStyle.Foreground(tcell.ColorReset)
 	frame.SetStyle(defStyle)
+	width, height := frame.Size()
+	frame.SetSize(width + 1, height)
 	frame.SetContent(0, 0, 'H', nil, defStyle)
 	frame.SetContent(1, 0, 'i', nil, defStyle)
 	frame.SetContent(2, 0, '!', nil, defStyle)
