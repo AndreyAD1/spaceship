@@ -6,7 +6,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func DrawFrame() tcell.Screen {
+func GetScreen() tcell.Screen {
 	frame, err := tcell.NewScreen()
 	if err != nil {
 		log.Fatalf("%+v", err)
@@ -18,7 +18,7 @@ func DrawFrame() tcell.Screen {
 	defStyle = defStyle.Foreground(tcell.ColorReset)
 	frame.SetStyle(defStyle)
 	width, height := frame.Size()
-	frame.SetSize(width + 1, height)
+	frame.SetSize(width+1, height)
 	frame.SetContent(0, 0, 'H', nil, defStyle)
 	frame.SetContent(1, 0, 'i', nil, defStyle)
 	frame.SetContent(2, 0, '!', nil, defStyle)
