@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"time"
 
 	"github.com/AndreyAD1/spaceship/frame"
@@ -58,6 +59,16 @@ func draw(screen tcell.Screen) {
 	objectsToLoose := []*ScreenObject{}
 	generateMeteorites(objectChannel)
 	for {
+		if screen.HasPendingEvent() {
+			event := screen.PollEvent()
+			switch ev := event.(type) {
+			case *tcell.EventKey:
+				if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+					screen.Fini()
+					os.Exit(0)
+				}
+			}
+		}
 		screen.Clear()
 	ObjectLoop:
 		for {
