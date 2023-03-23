@@ -2,7 +2,10 @@ module github.com/AndreyAD1/spaceship
 
 go 1.20
 
-require github.com/gdamore/tcell/v2 v2.6.0
+require (
+	github.com/caarlos0/env/v7 v7.1.0
+	github.com/gdamore/tcell/v2 v2.6.0
+)
 
 require (
 	github.com/gdamore/encoding v1.0.0 // indirect

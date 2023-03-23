@@ -1,10 +1,14 @@
 package main
 
 import (
+	"flag"
+	"log"
 	"os"
 	"time"
 
 	"github.com/AndreyAD1/spaceship/frame"
+	"github.com/AndreyAD1/spaceship/internal/config"
+	"github.com/caarlos0/env/v7"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -89,8 +93,23 @@ func draw(screen tcell.Screen) {
 	}
 }
 
+func quit(screen tcell.Screen) {
+	screen.Fini()
+	os.Exit(0)
+}
+
 func main() {
+	debug := flag.String("debug", "", "run in a debug mode")
+	flag.Parse()
+	configuration := config.StartupConfig{}
+	err := env.Parse(&configuration)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if *debug == "true" || *debug == "false" {
+		configuration.Debug = *debug == "true"
+	}
 	screen := frame.GetScreen()
-	defer screen.Clear()
+	defer quit(screen)
 	draw(screen)
 }
