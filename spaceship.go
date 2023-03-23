@@ -8,12 +8,12 @@ import (
 )
 
 type ScreenObject struct {
-	Events chan<- *ScreenObject
-	Block chan struct{}
+	Events    chan<- *ScreenObject
+	Block     chan struct{}
 	Eliminate chan struct{}
-	X int
-	Y int
-	Style tcell.Style
+	X         int
+	Y         int
+	Style     tcell.Style
 }
 
 func (this *ScreenObject) Move() {
@@ -23,8 +23,8 @@ func (this *ScreenObject) Move() {
 			break
 		default:
 		}
-		this.Y--
-		this.Events<- this
+		this.Y++
+		this.Events <- this
 		<-this.Block
 	}
 }
@@ -32,7 +32,7 @@ func (this *ScreenObject) Move() {
 func (this *ScreenObject) Draw(screen tcell.Screen) {
 	width, height := screen.Size()
 	if this.X > width || this.Y > height {
-		this.Eliminate<- struct{}{}
+		this.Eliminate <- struct{}{}
 		return
 	}
 	screen.SetContent(this.X, this.Y, 'O', nil, this.Style)
@@ -40,13 +40,13 @@ func (this *ScreenObject) Draw(screen tcell.Screen) {
 
 func generateMeteorites(events chan *ScreenObject) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
-	for i := 0; i < 10; i+=3 {
+	for i := 0; i < 10; i += 3 {
 		meteorite := ScreenObject{
 			events,
 			make(chan struct{}),
 			make(chan struct{}),
-			0,
 			i,
+			0,
 			meteoriteStyle,
 		}
 		go meteorite.Move()
@@ -59,16 +59,18 @@ func draw(screen tcell.Screen) {
 	generateMeteorites(objectChannel)
 	for {
 		screen.Clear()
+	ObjectLoop:
 		for {
 			select {
-			case object := <-objectChannel: 
+			case object := <-objectChannel:
 				object.Draw(screen)
 				objectsToLoose = append(objectsToLoose, object)
 			default:
 				for _, object := range objectsToLoose {
-					object.Block<- struct{}{}
+					object.Block <- struct{}{}
 				}
-				break
+				objectsToLoose = objectsToLoose[:0]
+				break ObjectLoop
 			}
 		}
 		screen.Show()
