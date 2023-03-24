@@ -106,7 +106,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if *debug == "true" || *debug == "false" {
+	if *debug != "" {
 		configuration.Debug = *debug == "true"
 	}
 	screen := frame.GetScreen()
