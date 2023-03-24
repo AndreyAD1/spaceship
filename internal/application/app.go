@@ -17,21 +17,25 @@ func GetApplication(config config.StartupConfig) Application {
 	return Application{config.Debug, 400 * time.Millisecond}
 }
 
-func (this Application) quit(screenSvc service.ScreenService) {
+func (this Application) quit(screenSvc services.ScreenService) {
 	screenSvc.Finish()
 	os.Exit(0)
 }
 
 func (this Application) Run() error {
-	screenService := services.GetScreenService()
+	screenService, err := services.GetScreenService()
+	if err != nil {
+		return err
+	}
 	defer this.quit(screenService)
 
 	objectChannel := make(chan *services.ScreenObject)
 	objectsToLoose := []*services.ScreenObject{}
 	services.GenerateMeteorites(objectChannel)
 	for {
-		userEvent := screenService.getScreenEvent()
-		if userEvent.action == screen.ScreenEvents.Exit {
+		// TODO fix a Ctrl+C exit
+		userEvent := screenService.GetScreenEvent()
+		if userEvent == services.Exit {
 			break
 		}
 		screenService.ClearScreen()
