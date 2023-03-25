@@ -8,7 +8,7 @@ func GenerateMeteorites(events chan *ScreenObject) {
 		meteorite := ScreenObject{
 			events,
 			make(chan struct{}),
-			make(chan struct{}),
+			true,
 			i,
 			0,
 			meteoriteStyle,

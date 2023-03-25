@@ -65,7 +65,7 @@ func (this ScreenService) Finish() {
 func (this ScreenService) Draw(obj *ScreenObject) {
 	width, height := this.screen.Size()
 	if obj.X > width || obj.Y > height {
-		obj.Eliminate <- struct{}{}
+		obj.Active = false
 		return
 	}
 	this.screen.SetContent(obj.X, obj.Y, 'O', nil, obj.Style)
