@@ -13,7 +13,6 @@ const (
 	Exit
 )
 
-
 type ScreenService struct {
 	screen tcell.Screen
 }
@@ -37,7 +36,6 @@ func GetScreenService() (ScreenService, error) {
 	screen.SetSize(width+1, height)
 	return ScreenService{screen}, nil
 }
-
 
 func (this ScreenService) GetScreenEvent() ScreenEvent {
 	if this.screen.HasPendingEvent() {

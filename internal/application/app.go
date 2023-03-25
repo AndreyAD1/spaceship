@@ -1,20 +1,20 @@
 package application
 
 import (
+	"log"
 	"os"
 	"time"
 
-	"github.com/AndreyAD1/spaceship/internal/config"
 	"github.com/AndreyAD1/spaceship/internal/services"
 )
 
 type Application struct {
-	DebugMode bool
+	Logger       *log.Logger
 	FrameTimeout time.Duration
 }
 
-func GetApplication(config config.StartupConfig) Application {
-	return Application{config.Debug, 400 * time.Millisecond}
+func GetApplication(logger *log.Logger) Application {
+	return Application{logger, 400 * time.Millisecond}
 }
 
 func (this Application) quit(screenSvc services.ScreenService) {
@@ -32,6 +32,7 @@ func (this Application) Run() error {
 	objectChannel := make(chan *services.ScreenObject)
 	objectsToLoose := []*services.ScreenObject{}
 	services.GenerateMeteorites(objectChannel)
+	this.Logger.Println("start an event loop")
 	for {
 		// TODO fix a Ctrl+C exit
 		userEvent := screenService.GetScreenEvent()
