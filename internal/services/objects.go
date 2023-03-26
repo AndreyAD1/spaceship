@@ -4,7 +4,7 @@ import "github.com/gdamore/tcell/v2"
 
 type ScreenObject struct {
 	Events    chan<- *ScreenObject
-	Block     chan struct{}
+	IsBlocked bool
 	Active    bool
 	X         int
 	Y         int
@@ -16,8 +16,11 @@ func (this *ScreenObject) Move() {
 		if this.Active != true {
 			break
 		}
+		if this.IsBlocked {
+			continue
+		}
 		this.Y++
+		this.IsBlocked = true
 		this.Events <- this
-		<-this.Block
 	}
 }

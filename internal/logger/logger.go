@@ -4,8 +4,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/charmbracelet/log"
 	"github.com/AndreyAD1/spaceship/internal/config"
+	"github.com/charmbracelet/log"
 )
 
 func GetNewLogger(configuration config.StartupConfig) (*log.Logger, error) {

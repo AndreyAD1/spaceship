@@ -4,8 +4,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/charmbracelet/log"
 	"github.com/AndreyAD1/spaceship/internal/services"
+	"github.com/charmbracelet/log"
 )
 
 type Application struct {
@@ -52,7 +52,7 @@ func (this Application) Run() error {
 			default:
 				this.Logger.Debugf("channel is empty, object: %v", objectsToLoose)
 				for _, object := range objectsToLoose {
-					object.Block <- struct{}{}
+					object.IsBlocked = false
 				}
 				objectsToLoose = objectsToLoose[:0]
 				break ObjectLoop

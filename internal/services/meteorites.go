@@ -7,7 +7,7 @@ func GenerateMeteorites(events chan *ScreenObject) {
 	for i := 0; i < 10; i += 3 {
 		meteorite := ScreenObject{
 			events,
-			make(chan struct{}),
+			false,
 			true,
 			i,
 			0,
