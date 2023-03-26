@@ -31,5 +31,5 @@ func main() {
 	}
 	app := application.GetApplication(newLogger)
 	err = app.Run()
-	log.Println(err)
+	newLogger.Print(err)
 }

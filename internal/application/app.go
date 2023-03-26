@@ -1,10 +1,10 @@
 package application
 
 import (
-	"log"
 	"os"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/AndreyAD1/spaceship/internal/services"
 )
 
@@ -32,28 +32,26 @@ func (this Application) Run() error {
 	objectChannel := make(chan *services.ScreenObject, 1)
 	objectsToLoose := []*services.ScreenObject{}
 	services.GenerateMeteorites(objectChannel)
-	this.Logger.Println("start an event loop")
+	this.Logger.Debug("start an event loop")
 	for {
-		this.Logger.Println("get screen event")
-		// TODO fix a Ctrl+C exit
+		this.Logger.Debug("get screen event")
 		userEvent := screenService.GetScreenEvent()
 		if userEvent == services.Exit {
-			this.Logger.Println("received an exit signal")
+			this.Logger.Debug("received an exit signal")
 			break
 		}
 		screenService.ClearScreen()
 	ObjectLoop:
 		for {
-			this.Logger.Printf("get object info. Object to loose: %v", objectsToLoose)
+			this.Logger.Debugf("get object info. Objects to loose: %v", objectsToLoose)
 			select {
 			case object := <-objectChannel:
-				this.Logger.Printf("receive an object %v-%v", object.X, object.Y)
+				this.Logger.Debugf("receive an object %v-%v", object.X, object.Y)
 				screenService.Draw(object)
 				objectsToLoose = append(objectsToLoose, object)
 			default:
-				this.Logger.Printf("channel is empty, object: %v", objectsToLoose)
+				this.Logger.Debugf("channel is empty, object: %v", objectsToLoose)
 				for _, object := range objectsToLoose {
-					this.Logger.Printf("loose object %v-%v", object.X, object.Y)
 					object.Block <- struct{}{}
 				}
 				objectsToLoose = objectsToLoose[:0]
