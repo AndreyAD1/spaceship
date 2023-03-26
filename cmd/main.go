@@ -25,7 +25,6 @@ func main() {
 	if *logFile != "" {
 		configuration.LogFile = *logFile
 	}
-	// TODO fix the launch without a log_file
 	newLogger, err := logger.GetNewLogger(configuration)
 	if err != nil {
 		log.Fatal(err)
