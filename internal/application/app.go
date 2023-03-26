@@ -32,7 +32,7 @@ func (this Application) Run() error {
 	objectChannel := make(chan services.ScreenObject)
 	objectsToLoose := []services.ScreenObject{}
 	services.GenerateMeteorites(objectChannel)
-	// services.GenerateShip(screenService, objectChannel)
+	services.GenerateShip(screenService, objectChannel)
 	this.Logger.Debug("start an event loop")
 	for {
 		this.Logger.Debug("get screen event")
