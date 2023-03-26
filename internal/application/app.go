@@ -29,9 +29,10 @@ func (this Application) Run() error {
 	}
 	defer this.quit(screenService)
 
-	objectChannel := make(chan *services.ScreenObject, 1)
-	objectsToLoose := []*services.ScreenObject{}
+	objectChannel := make(chan services.ScreenObject)
+	objectsToLoose := []services.ScreenObject{}
 	services.GenerateMeteorites(objectChannel)
+	// services.GenerateShip(screenService, objectChannel)
 	this.Logger.Debug("start an event loop")
 	for {
 		this.Logger.Debug("get screen event")
@@ -46,13 +47,12 @@ func (this Application) Run() error {
 			this.Logger.Debugf("get object info. Objects to loose: %v", objectsToLoose)
 			select {
 			case object := <-objectChannel:
-				this.Logger.Debugf("receive an object %v-%v", object.X, object.Y)
 				screenService.Draw(object)
 				objectsToLoose = append(objectsToLoose, object)
 			default:
 				this.Logger.Debugf("channel is empty, object: %v", objectsToLoose)
 				for _, object := range objectsToLoose {
-					object.IsBlocked = false
+					object.Unblock()
 				}
 				objectsToLoose = objectsToLoose[:0]
 				break ObjectLoop

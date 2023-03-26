@@ -1,16 +1,14 @@
 package services
 
-import (
-	"log"
-
-	"github.com/gdamore/tcell/v2"
-)
+import "github.com/gdamore/tcell/v2"
 
 type ScreenEvent int
 
 const (
 	NoEvent ScreenEvent = iota
 	Exit
+	GoLeft
+	GoRight
 )
 
 type ScreenService struct {
@@ -20,12 +18,9 @@ type ScreenService struct {
 func GetScreenService() (ScreenService, error) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
-		// TODO add proper logs
-		log.Printf("%+v", err)
 		return ScreenService{}, err
 	}
 	if err := screen.Init(); err != nil {
-		log.Printf("%+v", err)
 		return ScreenService{}, err
 	}
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset)
@@ -45,6 +40,12 @@ func (this ScreenService) GetScreenEvent() ScreenEvent {
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 				return Exit
 			}
+			if ev.Key() == tcell.KeyLeft {
+				return GoLeft
+			}
+			if ev.Key() == tcell.KeyRight {
+				return GoRight
+			}
 		}
 	}
 	return NoEvent
@@ -62,11 +63,12 @@ func (this ScreenService) Finish() {
 	this.screen.Fini()
 }
 
-func (this ScreenService) Draw(obj *ScreenObject) {
+func (this ScreenService) Draw(obj ScreenObject) {
 	width, height := this.screen.Size()
-	if obj.X > width || obj.Y > height {
-		obj.Active = false
+	x, y := obj.GetCoordinates()
+	if x > width || y > height {
+		obj.Deactivate()
 		return
 	}
-	this.screen.SetContent(obj.X, obj.Y, 'O', nil, obj.Style)
+	this.screen.SetContent(x, y, 'O', nil, obj.GetStyle())
 }
