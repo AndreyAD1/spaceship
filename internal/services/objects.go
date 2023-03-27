@@ -11,7 +11,7 @@ type ScreenObject interface {
 }
 
 type BaseObject struct {
-	Events    chan<- ScreenObject
+	Objects   chan<- ScreenObject
 	IsBlocked bool
 	Active    bool
 	X         int

@@ -5,7 +5,7 @@ import "github.com/gdamore/tcell/v2"
 func GenerateMeteorites(events chan ScreenObject) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	for i := 0; i < 10; i += 3 {
-		baseObject := BaseObject {
+		baseObject := BaseObject{
 			events,
 			false,
 			true,
@@ -32,6 +32,6 @@ func (this *Meteorite) Move() {
 		}
 		this.Y++
 		this.IsBlocked = true
-		this.Events <- this
+		this.Objects <- this
 	}
 }

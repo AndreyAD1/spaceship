@@ -17,7 +17,7 @@ func GetApplication(logger *log.Logger) Application {
 	return Application{logger, 400 * time.Millisecond}
 }
 
-func (this Application) quit(screenSvc services.ScreenService) {
+func (this Application) quit(screenSvc *services.ScreenService) {
 	screenSvc.Finish()
 	os.Exit(0)
 }
@@ -33,15 +33,13 @@ func (this Application) Run() error {
 	objectsToLoose := []services.ScreenObject{}
 	services.GenerateMeteorites(objectChannel)
 	services.GenerateShip(screenService, objectChannel)
+	go screenService.PollScreenEvents()
+
 	this.Logger.Debug("start an event loop")
 	for {
-		this.Logger.Debug("get screen event")
-		userEvent := screenService.GetScreenEvent()
-		if userEvent == services.Exit {
-			this.Logger.Debug("received an exit signal")
+		if screenService.Exit() {
 			break
 		}
-		screenService.ClearScreen()
 	ObjectLoop:
 		for {
 			this.Logger.Debugf("get object info. Objects to loose: %v", objectsToLoose)
@@ -61,6 +59,7 @@ func (this Application) Run() error {
 		screenService.ShowScreen()
 		// TODO think about different object speeds
 		time.Sleep(this.FrameTimeout)
+		screenService.ClearScreen()
 	}
 	return nil
 }

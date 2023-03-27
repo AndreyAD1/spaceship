@@ -13,15 +13,17 @@ const (
 
 type ScreenService struct {
 	screen tcell.Screen
+	exitChannel chan struct{}
+	controlChannel chan ScreenEvent
 }
 
-func GetScreenService() (ScreenService, error) {
+func GetScreenService() (*ScreenService, error) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
-		return ScreenService{}, err
+		return nil, err
 	}
 	if err := screen.Init(); err != nil {
-		return ScreenService{}, err
+		return nil, err
 	}
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	defStyle = defStyle.Foreground(tcell.ColorReset)
@@ -29,41 +31,68 @@ func GetScreenService() (ScreenService, error) {
 	width, height := screen.Size()
 	// Sometimes screen appears only after a resizing
 	screen.SetSize(width+1, height)
-	return ScreenService{screen}, nil
+	newSvc := ScreenService{
+		screen, 
+		make(chan struct{}), 
+		make(chan ScreenEvent),
+	}
+	return &newSvc, nil
 }
 
-func (this ScreenService) GetScreenEvent() ScreenEvent {
-	if this.screen.HasPendingEvent() {
-		event := this.screen.PollEvent()
-		switch ev := event.(type) {
-		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
-				return Exit
-			}
-			if ev.Key() == tcell.KeyLeft {
-				return GoLeft
-			}
-			if ev.Key() == tcell.KeyRight {
-				return GoRight
+func (this *ScreenService) PollScreenEvents() {
+	MainLoop:
+	for {
+		if this.screen.HasPendingEvent() {
+			event := this.screen.PollEvent()
+			switch ev := event.(type) {
+			case *tcell.EventKey:
+				if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+					this.exitChannel<- struct{}{}
+					close(this.exitChannel)
+					break MainLoop
+				}
+				if ev.Key() == tcell.KeyLeft {
+					this.controlChannel<- GoLeft
+				}
+				if ev.Key() == tcell.KeyRight {
+					this.controlChannel<- GoRight
+				}
 			}
 		}
 	}
-	return NoEvent
 }
 
-func (this ScreenService) ClearScreen() {
+func (this *ScreenService) Exit() bool {
+	select {
+	case <-this.exitChannel:
+		return true
+	default:
+		return false
+	}
+}
+
+func (this *ScreenService) GetControlEvent() ScreenEvent {
+	select {
+	case event := <-this.controlChannel:
+		return event
+	default:
+		return NoEvent
+	}
+}
+
+func (this *ScreenService) ClearScreen() {
 	this.screen.Clear()
 }
 
-func (this ScreenService) ShowScreen() {
+func (this *ScreenService) ShowScreen() {
 	this.screen.Show()
 }
 
-func (this ScreenService) Finish() {
+func (this *ScreenService) Finish() {
 	this.screen.Fini()
 }
 
-func (this ScreenService) Draw(obj ScreenObject) {
+func (this *ScreenService) Draw(obj ScreenObject) {
 	width, height := this.screen.Size()
 	x, y := obj.GetCoordinates()
 	if x > width || y > height {

@@ -2,10 +2,10 @@ package services
 
 import "github.com/gdamore/tcell/v2"
 
-func GenerateShip(screenSvc ScreenService, events chan ScreenObject) {
+func GenerateShip(screenSvc *ScreenService, objects chan ScreenObject) {
 	width, height := screenSvc.screen.Size()
-	baseObject := BaseObject {
-		events,
+	baseObject := BaseObject{
+		objects,
 		false,
 		true,
 		width / 2,
@@ -18,7 +18,7 @@ func GenerateShip(screenSvc ScreenService, events chan ScreenObject) {
 
 type Spaceship struct {
 	BaseObject
-	screenSvc ScreenService
+	screenSvc *ScreenService
 }
 
 func (this *Spaceship) Move() {
@@ -26,14 +26,13 @@ func (this *Spaceship) Move() {
 		if this.IsBlocked {
 			continue
 		}
-		// TODO make a ship react to every key click
-		switch this.screenSvc.GetScreenEvent() {
+		switch event := this.screenSvc.GetControlEvent(); event {
 		case GoLeft:
 			this.X--
 		case GoRight:
 			this.X++
 		}
 		this.IsBlocked = true
-		this.Events <- this
+		this.Objects <- this
 	}
 }
