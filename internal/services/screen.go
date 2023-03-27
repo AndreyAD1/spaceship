@@ -42,21 +42,29 @@ func GetScreenService() (*ScreenService, error) {
 func (this *ScreenService) PollScreenEvents() {
 	MainLoop:
 	for {
-		if this.screen.HasPendingEvent() {
-			event := this.screen.PollEvent()
-			switch ev := event.(type) {
-			case *tcell.EventKey:
+		var event tcell.Event
+		for this.screen.HasPendingEvent() {
+			event = this.screen.PollEvent()
+			if ev, ok := event.(*tcell.EventKey); ok {
 				if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 					this.exitChannel<- struct{}{}
 					close(this.exitChannel)
 					break MainLoop
 				}
-				if ev.Key() == tcell.KeyLeft {
-					this.controlChannel<- GoLeft
-				}
-				if ev.Key() == tcell.KeyRight {
-					this.controlChannel<- GoRight
-				}
+			}
+		}
+		switch ev := event.(type) {
+		case *tcell.EventKey:
+			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+				this.exitChannel<- struct{}{}
+				close(this.exitChannel)
+				break MainLoop
+			}
+			if ev.Key() == tcell.KeyLeft {
+				this.controlChannel<- GoLeft
+			}
+			if ev.Key() == tcell.KeyRight {
+				this.controlChannel<- GoRight
 			}
 		}
 	}
