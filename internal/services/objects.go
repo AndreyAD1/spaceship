@@ -1,6 +1,10 @@
 package services
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"math"
+
+	"github.com/gdamore/tcell/v2"
+)
 
 type ScreenObject interface {
 	GetCoordinates() (int, int)
@@ -14,8 +18,8 @@ type BaseObject struct {
 	Objects   chan<- ScreenObject
 	IsBlocked bool
 	Active    bool
-	X         int
-	Y         int
+	X         float64
+	Y         float64
 	Style     tcell.Style
 }
 
@@ -28,7 +32,7 @@ func (this *BaseObject) Unblock() {
 }
 
 func (this *BaseObject) GetCoordinates() (int, int) {
-	return this.X, this.Y
+	return int(math.Round(this.X)), int(math.Round(this.Y))
 }
 
 func (this *BaseObject) GetStyle() tcell.Style {

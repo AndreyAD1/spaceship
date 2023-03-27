@@ -12,8 +12,8 @@ const (
 )
 
 type ScreenService struct {
-	screen tcell.Screen
-	exitChannel chan struct{}
+	screen         tcell.Screen
+	exitChannel    chan struct{}
 	controlChannel chan ScreenEvent
 }
 
@@ -32,22 +32,22 @@ func GetScreenService() (*ScreenService, error) {
 	// Sometimes screen appears only after a resizing
 	screen.SetSize(width+1, height)
 	newSvc := ScreenService{
-		screen, 
-		make(chan struct{}), 
+		screen,
+		make(chan struct{}),
 		make(chan ScreenEvent),
 	}
 	return &newSvc, nil
 }
 
 func (this *ScreenService) PollScreenEvents() {
-	MainLoop:
+MainLoop:
 	for {
 		var event tcell.Event
 		for this.screen.HasPendingEvent() {
 			event = this.screen.PollEvent()
 			if ev, ok := event.(*tcell.EventKey); ok {
 				if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
-					this.exitChannel<- struct{}{}
+					this.exitChannel <- struct{}{}
 					close(this.exitChannel)
 					break MainLoop
 				}
@@ -56,15 +56,15 @@ func (this *ScreenService) PollScreenEvents() {
 		switch ev := event.(type) {
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
-				this.exitChannel<- struct{}{}
+				this.exitChannel <- struct{}{}
 				close(this.exitChannel)
 				break MainLoop
 			}
 			if ev.Key() == tcell.KeyLeft {
-				this.controlChannel<- GoLeft
+				this.controlChannel <- GoLeft
 			}
 			if ev.Key() == tcell.KeyRight {
-				this.controlChannel<- GoRight
+				this.controlChannel <- GoRight
 			}
 		}
 	}

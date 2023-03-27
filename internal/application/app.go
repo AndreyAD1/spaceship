@@ -14,7 +14,7 @@ type Application struct {
 }
 
 func GetApplication(logger *log.Logger) Application {
-	return Application{logger, 400 * time.Millisecond}
+	return Application{logger, 10 * time.Millisecond}
 }
 
 func (this Application) quit(screenSvc *services.ScreenService) {
@@ -57,7 +57,6 @@ func (this Application) Run() error {
 			}
 		}
 		screenService.ShowScreen()
-		// TODO think about different object speeds
 		time.Sleep(this.FrameTimeout)
 		screenService.ClearScreen()
 	}

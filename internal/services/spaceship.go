@@ -8,8 +8,8 @@ func GenerateShip(screenSvc *ScreenService, objects chan ScreenObject) {
 		objects,
 		false,
 		true,
-		width / 2,
-		height - 1,
+		float64(width) / 2,
+		float64(height) - 1,
 		tcell.StyleDefault.Background(tcell.ColorReset),
 	}
 	spaceship := Spaceship{baseObject, screenSvc}

@@ -9,17 +9,18 @@ func GenerateMeteorites(events chan ScreenObject) {
 			events,
 			false,
 			true,
-			i,
+			float64(i),
 			0,
 			meteoriteStyle,
 		}
-		meteorite := Meteorite{baseObject}
+		meteorite := Meteorite{baseObject, 0.01}
 		go meteorite.Move()
 	}
 }
 
 type Meteorite struct {
 	BaseObject
+	speed float64 // cells per iteration
 }
 
 func (this *Meteorite) Move() {
@@ -30,7 +31,7 @@ func (this *Meteorite) Move() {
 		if this.IsBlocked {
 			continue
 		}
-		this.Y++
+		this.Y += this.speed
 		this.IsBlocked = true
 		this.Objects <- this
 	}
