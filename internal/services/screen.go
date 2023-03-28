@@ -116,3 +116,15 @@ func (this *ScreenService) Draw(obj ScreenObject) {
 	x, y := obj.GetCoordinates()
 	this.screen.SetContent(x, y, 'O', nil, obj.GetStyle())
 }
+
+func (this *ScreenService) GetObjectList() [][][]ScreenObject {
+	width, height := this.screen.Size()
+	newList := make([][][]ScreenObject, height)
+	for i := 0; i < height; i++ {
+		newList[i] = make([][]ScreenObject, width)
+		for j := 0; j < width; j++ {
+			newList[i][j] = []ScreenObject{}
+		}
+	}
+	return newList
+}

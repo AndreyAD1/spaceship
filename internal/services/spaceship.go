@@ -24,6 +24,10 @@ type Spaceship struct {
 
 func (this *Spaceship) Move() {
 	for {
+		if !this.Active {
+			// go GameOver(this.Objects)
+			break
+		}
 		if this.IsBlocked {
 			continue
 		}

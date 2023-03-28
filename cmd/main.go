@@ -29,7 +29,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		if p := recover(); p != nil {
+			newLogger.Errorf("Internal error: %v", p)
+		}
+	}()
 	app := application.GetApplication(newLogger)
+	newLogger.Debug("run application")
 	err = app.Run()
+	newLogger.Debug("finish application: %v", err)
 	newLogger.Print(err)
 }
