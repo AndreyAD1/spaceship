@@ -27,11 +27,15 @@ func (this *Spaceship) Move() {
 		if this.IsBlocked {
 			continue
 		}
+		newX := this.X
 		switch event := this.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
-			this.X--
+			newX = this.X - this.Speed
 		case GoRight:
-			this.X++
+			newX = this.X + this.Speed
+		}
+		if this.ScreenSvc.IsInsideScreen(newX, this.Y) {
+			this.X = newX
 		}
 		this.IsBlocked = true
 		this.Objects <- this
