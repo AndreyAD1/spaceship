@@ -16,11 +16,13 @@ type ScreenObject interface {
 
 type BaseObject struct {
 	Objects   chan<- ScreenObject
+	ScreenSvc *ScreenService
 	IsBlocked bool
 	Active    bool
 	X         float64
 	Y         float64
 	Style     tcell.Style
+	Speed     float64 // Cells per iteration. Max speed = 1
 }
 
 func (this *BaseObject) Deactivate() {

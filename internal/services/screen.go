@@ -1,6 +1,9 @@
 package services
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"math"
+	"github.com/gdamore/tcell/v2"
+)
 
 type ScreenEvent int
 
@@ -100,12 +103,16 @@ func (this *ScreenService) Finish() {
 	this.screen.Fini()
 }
 
-func (this *ScreenService) Draw(obj ScreenObject) {
+func (this *ScreenService) IsInsideScreen(x, y float64) bool {
 	width, height := this.screen.Size()
-	x, y := obj.GetCoordinates()
-	if x > width || y > height {
-		obj.Deactivate()
-		return
+	roundX, roundY := int(math.Round(x)), int(math.Round(y))
+	if roundX > width || roundX < 0 || roundY > height || roundY < 0 {
+		return false
 	}
+	return true
+}
+
+func (this *ScreenService) Draw(obj ScreenObject) {
+	x, y := obj.GetCoordinates()
 	this.screen.SetContent(x, y, 'O', nil, obj.GetStyle())
 }

@@ -6,19 +6,20 @@ func GenerateShip(screenSvc *ScreenService, objects chan ScreenObject) {
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
 		objects,
+		screenSvc,
 		false,
 		true,
 		float64(width) / 2,
 		float64(height) - 1,
 		tcell.StyleDefault.Background(tcell.ColorReset),
+		0.5,
 	}
-	spaceship := Spaceship{baseObject, screenSvc}
+	spaceship := Spaceship{baseObject}
 	go spaceship.Move()
 }
 
 type Spaceship struct {
 	BaseObject
-	screenSvc *ScreenService
 }
 
 func (this *Spaceship) Move() {
@@ -26,7 +27,7 @@ func (this *Spaceship) Move() {
 		if this.IsBlocked {
 			continue
 		}
-		switch event := this.screenSvc.GetControlEvent(); event {
+		switch event := this.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
 			this.X--
 		case GoRight:

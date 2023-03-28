@@ -31,7 +31,7 @@ func (this Application) Run() error {
 
 	objectChannel := make(chan services.ScreenObject)
 	objectsToLoose := []services.ScreenObject{}
-	services.GenerateMeteorites(objectChannel)
+	services.GenerateMeteorites(objectChannel, screenService)
 	services.GenerateShip(screenService, objectChannel)
 	go screenService.PollScreenEvents()
 
