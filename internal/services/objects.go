@@ -9,14 +9,11 @@ import (
 type ScreenObject interface {
 	GetCoordinates() (int, int)
 	GetStyle() tcell.Style
-	Move()
 	Unblock()
 	Deactivate()
 }
 
 type BaseObject struct {
-	Objects   chan<- ScreenObject
-	ScreenSvc *ScreenService
 	IsBlocked bool
 	Active    bool
 	X         float64

@@ -23,9 +23,10 @@ func (this Application) Run() error {
 	}
 	defer screenService.Exit()
 
-	objectChannel := make(chan services.ScreenObject)
-	services.GenerateMeteorites(objectChannel, screenService)
-	services.GenerateShip(objectChannel, screenService)
+	interactiveObjects := make(chan services.ScreenObject)
+	gameoverChannel := make(chan *services.GameOver)
+	services.GenerateMeteorites(interactiveObjects, screenService)
+	services.GenerateShip(interactiveObjects, screenService, gameoverChannel)
 	go screenService.PollScreenEvents()
 
 	screenObjects := screenService.GetObjectList() 
@@ -37,7 +38,7 @@ func (this Application) Run() error {
 	ObjectLoop:
 		for {
 			select {
-			case object := <-objectChannel:
+			case object := <-interactiveObjects:
 				x, y := object.GetCoordinates()
 				screenObjects[y][x] = append(screenObjects[y][x], object)
 			default:
@@ -63,6 +64,11 @@ func (this Application) Run() error {
 				screenObjects[y][x] = []services.ScreenObject{}
 			}
 		}
+		select {
+		case gameover := <- gameoverChannel:
+			screenService.Draw(gameover)
+		default:
+		} 
 
 		screenService.ShowScreen()
 		time.Sleep(this.FrameTimeout)

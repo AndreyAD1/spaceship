@@ -6,8 +6,6 @@ func GenerateMeteorites(events chan ScreenObject, sreencSvc *ScreenService) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	for i := 0; i < 10; i += 3 {
 		baseObject := BaseObject{
-			events,
-			sreencSvc,
 			false,
 			true,
 			float64(i),
@@ -15,13 +13,15 @@ func GenerateMeteorites(events chan ScreenObject, sreencSvc *ScreenService) {
 			meteoriteStyle,
 			0.01,
 		}
-		meteorite := Meteorite{baseObject}
+		meteorite := Meteorite{baseObject, events, sreencSvc}
 		go meteorite.Move()
 	}
 }
 
 type Meteorite struct {
 	BaseObject
+	Objects   chan<- ScreenObject
+	ScreenSvc *ScreenService
 }
 
 func (this *Meteorite) Move() {

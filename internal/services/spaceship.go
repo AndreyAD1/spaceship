@@ -2,11 +2,13 @@ package services
 
 import "github.com/gdamore/tcell/v2"
 
-func GenerateShip(objects chan ScreenObject, screenSvc *ScreenService) {
+func GenerateShip(
+	objects chan ScreenObject, 
+	screenSvc *ScreenService,
+	gameover chan *GameOver,
+) Spaceship {
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
-		objects,
-		screenSvc,
 		false,
 		true,
 		float64(width) / 2,
@@ -14,18 +16,21 @@ func GenerateShip(objects chan ScreenObject, screenSvc *ScreenService) {
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		1,
 	}
-	spaceship := Spaceship{baseObject}
+	spaceship := Spaceship{baseObject, objects, screenSvc, gameover}
 	go spaceship.Move()
+	return spaceship
 }
 
 type Spaceship struct {
 	BaseObject
+	Objects   chan<- ScreenObject
+	ScreenSvc *ScreenService
+	gameover chan *GameOver
 }
 
 func (this *Spaceship) Move() {
 	for {
 		if !this.Active {
-			// go GameOver(this.Objects)
 			break
 		}
 		if this.IsBlocked {
@@ -44,4 +49,5 @@ func (this *Spaceship) Move() {
 		this.IsBlocked = true
 		this.Objects <- this
 	}
+	go DrawGameOver(this.gameover, this.ScreenSvc)
 }
