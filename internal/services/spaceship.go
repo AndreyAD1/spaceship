@@ -2,7 +2,7 @@ package services
 
 import "github.com/gdamore/tcell/v2"
 
-func GenerateShip(screenSvc *ScreenService, objects chan ScreenObject) {
+func GenerateShip(objects chan ScreenObject, screenSvc *ScreenService) {
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
 		objects,
@@ -12,7 +12,7 @@ func GenerateShip(screenSvc *ScreenService, objects chan ScreenObject) {
 		float64(width) / 2,
 		float64(height) - 1,
 		tcell.StyleDefault.Background(tcell.ColorReset),
-		0.5,
+		1,
 	}
 	spaceship := Spaceship{baseObject}
 	go spaceship.Move()

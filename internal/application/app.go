@@ -1,7 +1,6 @@
 package application
 
 import (
-	"os"
 	"time"
 
 	"github.com/AndreyAD1/spaceship/internal/services"
@@ -17,41 +16,31 @@ func GetApplication(logger *log.Logger) Application {
 	return Application{logger, 10 * time.Millisecond}
 }
 
-func (this Application) quit(screenSvc *services.ScreenService) {
-	screenSvc.Finish()
-	os.Exit(0)
-}
-
 func (this Application) Run() error {
 	screenService, err := services.GetScreenService()
 	if err != nil {
 		return err
 	}
-	defer this.quit(screenService)
+	defer screenService.Exit()
 
 	objectChannel := make(chan services.ScreenObject)
 	services.GenerateMeteorites(objectChannel, screenService)
-	services.GenerateShip(screenService, objectChannel)
+	services.GenerateShip(objectChannel, screenService)
 	go screenService.PollScreenEvents()
 
 	screenObjects := screenService.GetObjectList() 
 	this.Logger.Debug("start an event loop")
 	for {
-		this.Logger.Debug("main event loop")
 		if screenService.Exit() {
 			break
 		}
 	ObjectLoop:
 		for {
-			// this.Logger.Debugf("get object info. Objects: %v", screenObjects)
 			select {
 			case object := <-objectChannel:
 				x, y := object.GetCoordinates()
-				if y < len(screenObjects) && x < len(screenObjects[y]) {
-					screenObjects[y][x] = append(screenObjects[y][x], object)
-				}
+				screenObjects[y][x] = append(screenObjects[y][x], object)
 			default:
-				// this.Logger.Debugf("channel is empty, objects: %v", screenObjects)
 				break ObjectLoop
 			}
 		}

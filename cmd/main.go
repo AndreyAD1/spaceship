@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 
 	"github.com/AndreyAD1/spaceship/internal/application"
 	"github.com/AndreyAD1/spaceship/internal/config"
@@ -37,6 +38,8 @@ func main() {
 	app := application.GetApplication(newLogger)
 	newLogger.Debug("run application")
 	err = app.Run()
-	newLogger.Debug("finish application: %v", err)
-	newLogger.Print(err)
+	if err != nil {
+		newLogger.Error(err)
+		os.Exit(1)
+	}
 }
