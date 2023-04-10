@@ -24,7 +24,7 @@ func (this Application) Run() error {
 	defer screenService.Exit()
 
 	interactiveObjects := make(chan services.ScreenObject)
-	gameoverChannel := make(chan *services.GameOver)
+	gameoverChannel := make(chan *services.BaseObject)
 	services.GenerateMeteorites(interactiveObjects, screenService)
 	services.GenerateShip(interactiveObjects, screenService, gameoverChannel)
 	go screenService.PollScreenEvents()

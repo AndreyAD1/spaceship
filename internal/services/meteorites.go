@@ -12,6 +12,7 @@ func GenerateMeteorites(events chan ScreenObject, sreencSvc *ScreenService) {
 			0,
 			meteoriteStyle,
 			0.01,
+			"M",
 		}
 		meteorite := Meteorite{baseObject, events, sreencSvc}
 		go meteorite.Move()

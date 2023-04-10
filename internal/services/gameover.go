@@ -11,25 +11,20 @@ _____                         ____
 \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
 `
 
-func DrawGameOver(channel chan<- *GameOver, screenSvc *ScreenService) {
+func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
 	width, height := screenSvc.screen.Size()
 	labelRow := width / 4
 	labelColumn := height / 4
-	base := BaseObject {
+	gameover := BaseObject {
 		false,
 		true,
 		float64(labelRow),
 		float64(labelColumn),
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		0.01,
+		label,
 	}
-	gameover := GameOver{base, label}
 	for {
 		channel<- &gameover
 	}
-}
-
-type GameOver struct {
-	BaseObject
-	view string
 }

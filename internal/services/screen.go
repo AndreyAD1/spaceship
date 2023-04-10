@@ -2,6 +2,8 @@ package services
 
 import (
 	"math"
+	"unicode"
+
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -113,8 +115,20 @@ func (this *ScreenService) IsInsideScreen(x, y float64) bool {
 }
 
 func (this *ScreenService) Draw(obj ScreenObject) {
-	x, y := obj.GetCoordinates()
-	this.screen.SetContent(x, y, 'O', nil, obj.GetStyle())
+	initialX, y := obj.GetCoordinates()
+	view := obj.GetView()
+	x := initialX
+	for _, char := range view {
+		if char == '\n' {
+			y++
+			x = initialX
+			continue
+		}
+		if !unicode.IsSpace(char) {
+			this.screen.SetContent(x, y, char, nil, obj.GetStyle())
+		}
+		x++
+	}
 }
 
 func (this *ScreenService) GetObjectList() [][][]ScreenObject {

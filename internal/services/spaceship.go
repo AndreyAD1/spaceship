@@ -5,7 +5,7 @@ import "github.com/gdamore/tcell/v2"
 func GenerateShip(
 	objects chan ScreenObject, 
 	screenSvc *ScreenService,
-	gameover chan *GameOver,
+	gameover chan *BaseObject,
 ) Spaceship {
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
@@ -15,6 +15,7 @@ func GenerateShip(
 		float64(height) - 1,
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		1,
+		"O",
 	}
 	spaceship := Spaceship{baseObject, objects, screenSvc, gameover}
 	go spaceship.Move()
@@ -25,7 +26,7 @@ type Spaceship struct {
 	BaseObject
 	Objects   chan<- ScreenObject
 	ScreenSvc *ScreenService
-	gameover chan *GameOver
+	gameover chan *BaseObject
 }
 
 func (this *Spaceship) Move() {
