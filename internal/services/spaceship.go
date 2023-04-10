@@ -43,6 +43,8 @@ func (this *Spaceship) Move() {
 			newX = this.X - this.Speed
 		case GoRight:
 			newX = this.X + this.Speed
+		case Shoot:
+			go Shot(this.ScreenSvc, this.Objects, this.X, this.Y - 1)
 		}
 		if this.ScreenSvc.IsInsideScreen(newX, this.Y) {
 			this.X = newX

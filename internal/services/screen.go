@@ -14,6 +14,7 @@ const (
 	Exit
 	GoLeft
 	GoRight
+	Shoot
 )
 
 type ScreenService struct {
@@ -70,6 +71,9 @@ MainLoop:
 			}
 			if ev.Key() == tcell.KeyRight {
 				this.controlChannel <- GoRight
+			}
+			if ev.Key() == tcell.KeyRune {
+				this.controlChannel <- Shoot
 			}
 		}
 	}
