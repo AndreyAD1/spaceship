@@ -61,18 +61,20 @@ MainLoop:
 		}
 		switch ev := event.(type) {
 		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+			switch ev.Key() {
+			case tcell.KeyEscape:
 				this.exitChannel <- struct{}{}
 				close(this.exitChannel)
 				break MainLoop
-			}
-			if ev.Key() == tcell.KeyLeft {
+			case tcell.KeyCtrlC:
+				this.exitChannel <- struct{}{}
+				close(this.exitChannel)
+				break MainLoop
+			case tcell.KeyLeft:
 				this.controlChannel <- GoLeft
-			}
-			if ev.Key() == tcell.KeyRight {
+			case tcell.KeyRight:
 				this.controlChannel <- GoRight
-			}
-			if ev.Key() == tcell.KeyRune {
+			case tcell.KeyRune:
 				this.controlChannel <- Shoot
 			}
 		}
