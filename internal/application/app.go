@@ -29,7 +29,8 @@ func (this Application) Run() error {
 	services.GenerateShip(interactiveObjects, screenService, gameoverChannel)
 	go screenService.PollScreenEvents()
 
-	screenObjects := screenService.GetObjectList() 
+	screenObjects := screenService.GetObjectList()
+	interObjects := []services.ScreenObject{}
 	this.Logger.Debug("start an event loop")
 	for {
 		if screenService.Exit() {
@@ -39,31 +40,44 @@ func (this Application) Run() error {
 		for {
 			select {
 			case object := <-interactiveObjects:
-				x, y := object.GetCoordinates()
-				screenObjects[y][x] = append(screenObjects[y][x], object)
+				interObjects = append(interObjects, object)
+				coordinates := object.GetCoordinates()
+				this.Logger.Debugf("object %v coordinates: %v", object.GetView(), coordinates)
+				for _, coord_pair := range coordinates {
+					x, y := coord_pair[0], coord_pair[1]
+					if screenService.IsInsideScreen(float64(x), float64(y)) {
+						screenObjects[y][x] = append(screenObjects[y][x], object)
+					}
+				}
 			default:
 				break ObjectLoop
 			}
 		}
+		this.Logger.Debugf("screen objects: %v", screenObjects)
 		for y, row := range screenObjects {
 			for x, objects := range row {
 				if len(objects) == 0 {
 					continue
 				}
-				if len(objects) == 1 {
+				if len(objects) == 1 && !objects[0].GetDrawStatus() {
 					screenService.Draw(objects[0])
-					objects[0].Unblock()
+					objects[0].MarkDrawn()
 					screenObjects[y][x] = []services.ScreenObject{}
 					continue
 				}
 				// collision occurred
-				for _, object := range objects {
-					object.Deactivate()
-					object.Unblock()
+				if len(objects) > 1 {
+					for _, object := range objects {
+						object.Deactivate()
+					}
 				}
 				screenObjects[y][x] = []services.ScreenObject{}
 			}
 		}
+		for _, object := range interObjects {
+			object.Unblock()
+		}
+		interObjects = []services.ScreenObject{}
 		select {
 		case gameover := <- gameoverChannel:
 			screenService.Draw(gameover)

@@ -7,6 +7,7 @@ func GenerateMeteorites(events chan ScreenObject, sreencSvc *ScreenService) {
 	for i := 0; i < 10; i += 3 {
 		baseObject := BaseObject{
 			false,
+			false,
 			true,
 			float64(i),
 			0,
