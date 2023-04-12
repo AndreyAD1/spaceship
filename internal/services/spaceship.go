@@ -2,14 +2,12 @@ package services
 
 import "github.com/gdamore/tcell/v2"
 
-const SpaceshipView = `
-  .
+const SpaceshipView = `  . 
  .'.
  |o|
 .'o'.
 |.-.|
-'   '
-`
+'   '`
 
 func GenerateShip(
 	objects chan ScreenObject, 
@@ -22,7 +20,7 @@ func GenerateShip(
 		false,
 		true,
 		float64(width) / 2,
-		float64(height) - 7,
+		float64(height) - 6,
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		1,
 		SpaceshipView,
@@ -54,9 +52,11 @@ func (this *Spaceship) Move() {
 		case GoRight:
 			newX = this.X + this.Speed
 		case Shoot:
-			go Shot(this.ScreenSvc, this.Objects, this.X + 4, this.Y - 1)
+			go Shot(this.ScreenSvc, this.Objects, this.X + 4, this.Y)
 		}
-		if this.ScreenSvc.IsInsideScreen(newX, this.Y) {
+		leftBooundaryIsValid := this.ScreenSvc.IsInsideScreen(newX + 2, this.Y)
+		rightBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX + 5, this.Y)
+		if leftBooundaryIsValid && rightBoundaryIsValid {
 			this.X = newX
 		}
 		this.IsBlocked = true

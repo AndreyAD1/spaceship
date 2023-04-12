@@ -43,7 +43,7 @@ func (this *BaseObject) GetCoordinates() [][]int {
 	x := initialX
 	coordinates := [][]int{}
 	for _, char := range view {
-		if char == '\n' {
+		if unicode.IsControl(char) {
 			y++
 			x = initialX
 			continue
