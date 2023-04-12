@@ -25,7 +25,7 @@ func (this Application) Run() error {
 
 	interactiveObjects := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
-	services.GenerateMeteorites(interactiveObjects, screenService)
+	go services.GenerateMeteorites(interactiveObjects, screenService)
 	services.GenerateShip(interactiveObjects, screenService, gameoverChannel)
 	go screenService.PollScreenEvents()
 
@@ -39,21 +39,19 @@ func (this Application) Run() error {
 	ObjectLoop:
 		for {
 			select {
-			case object := <-interactiveObjects:
-				interObjects = append(interObjects, object)
-				coordinates := object.GetCoordinates()
-				this.Logger.Debugf("object %v coordinates: %v", object.GetView(), coordinates)
+			case obj := <-interactiveObjects:
+				interObjects = append(interObjects, obj)
+				coordinates := obj.GetCoordinates()
 				for _, coord_pair := range coordinates {
 					x, y := coord_pair[0], coord_pair[1]
 					if screenService.IsInsideScreen(float64(x), float64(y)) {
-						screenObjects[y][x] = append(screenObjects[y][x], object)
+						screenObjects[y][x] = append(screenObjects[y][x], obj)
 					}
 				}
 			default:
 				break ObjectLoop
 			}
 		}
-		this.Logger.Debugf("screen objects: %v", screenObjects)
 		for y, row := range screenObjects {
 			for x, objects := range row {
 				if len(objects) == 0 {

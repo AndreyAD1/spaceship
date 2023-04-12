@@ -1,22 +1,32 @@
 package services
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"math/rand"
+	"time"
 
-func GenerateMeteorites(events chan ScreenObject, sreencSvc *ScreenService) {
+	"github.com/gdamore/tcell/v2"
+)
+
+func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
-	for i := 0; i < 10; i += 3 {
+	width, _ := screenSvc.GetScreenSize()
+	for {
+		if rand.Float32() < 0.99 {
+			continue
+		}
 		baseObject := BaseObject{
 			false,
 			false,
 			true,
-			float64(i),
+			float64(rand.Intn(width)),
 			0,
 			meteoriteStyle,
 			0.01,
 			"O",
 		}
-		meteorite := Meteorite{baseObject, events, sreencSvc}
+		meteorite := Meteorite{baseObject, events, screenSvc}
 		go meteorite.Move()
+		time.Sleep(time.Second)
 	}
 }
 

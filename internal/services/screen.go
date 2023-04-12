@@ -151,3 +151,7 @@ func (this *ScreenService) GetObjectList() [][][]ScreenObject {
 	}
 	return newList
 }
+
+func (this *ScreenService) GetScreenSize() (int, int) {
+	return this.screen.Size()
+}
