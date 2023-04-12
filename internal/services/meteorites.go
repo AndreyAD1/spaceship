@@ -7,6 +7,11 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+const MeteoriteView = `  ___
+ /   \
+/     /
+\____/`
+
 func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
@@ -19,14 +24,14 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 			false,
 			true,
 			float64(rand.Intn(width)),
-			0,
+			-7,
 			meteoriteStyle,
 			0.01,
-			"O",
+			MeteoriteView,
 		}
 		meteorite := Meteorite{baseObject, events, screenSvc}
 		go meteorite.Move()
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 1)
 	}
 }
 
@@ -45,7 +50,8 @@ func (this *Meteorite) Move() {
 			continue
 		}
 		newY := this.Y + this.Speed
-		if !this.ScreenSvc.IsInsideScreen(this.X, newY) {
+		_, height := this.ScreenSvc.GetScreenSize()
+		if newY > float64(height) + 2 {
 			this.Deactivate()
 			break
 		}
