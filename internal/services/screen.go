@@ -40,7 +40,8 @@ func GetScreenService() (*ScreenService, error) {
 	newSvc := ScreenService{
 		screen,
 		make(chan struct{}),
-		make(chan ScreenEvent),
+		// a channel buffer allows user to exit in a game over state
+		make(chan ScreenEvent, 15),
 	}
 	return &newSvc, nil
 }
