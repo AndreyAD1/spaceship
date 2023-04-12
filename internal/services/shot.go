@@ -23,7 +23,6 @@ type Shell struct {
 	ScreenSvc *ScreenService
 }
 
-
 func (this *Shell) Move() {
 	for {
 		if this.Active != true {
@@ -36,7 +35,7 @@ func (this *Shell) Move() {
 		if !this.ScreenSvc.IsInsideScreen(this.X, newY) {
 			this.Deactivate()
 			break
-		} 
+		}
 		this.Y = newY
 		this.IsBlocked = true
 		this.Objects <- this

@@ -15,7 +15,7 @@ func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
 	width, height := screenSvc.screen.Size()
 	labelRow := width / 4
 	labelColumn := height / 4
-	gameover := BaseObject {
+	gameover := BaseObject{
 		false,
 		false,
 		true,
@@ -26,6 +26,6 @@ func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
 		label,
 	}
 	for {
-		channel<- &gameover
+		channel <- &gameover
 	}
 }

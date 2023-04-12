@@ -116,7 +116,7 @@ func (this *ScreenService) Finish() {
 func (this *ScreenService) IsInsideScreen(x, y float64) bool {
 	width, height := this.screen.Size()
 	roundX, roundY := int(math.Round(x)), int(math.Round(y))
-	if roundX >= width - 1 || roundX < 0 || roundY >= height || roundY < 0 {
+	if roundX >= width-1 || roundX < 0 || roundY >= height || roundY < 0 {
 		return false
 	}
 	return true

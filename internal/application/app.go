@@ -79,10 +79,10 @@ func (this Application) Run() error {
 		}
 		interObjects = []services.ScreenObject{}
 		select {
-		case gameover := <- gameoverChannel:
+		case gameover := <-gameoverChannel:
 			screenService.Draw(gameover)
 		default:
-		} 
+		}
 
 		screenService.ShowScreen()
 		time.Sleep(this.FrameTimeout)

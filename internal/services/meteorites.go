@@ -38,7 +38,7 @@ func (this *Meteorite) Move() {
 		if !this.ScreenSvc.IsInsideScreen(this.X, newY) {
 			this.Deactivate()
 			break
-		} 
+		}
 		this.Y = newY
 		this.IsBlocked = true
 		this.Objects <- this

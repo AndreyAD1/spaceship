@@ -10,7 +10,7 @@ const SpaceshipView = `  .
 '   '`
 
 func GenerateShip(
-	objects chan ScreenObject, 
+	objects chan ScreenObject,
 	screenSvc *ScreenService,
 	gameover chan *BaseObject,
 ) Spaceship {
@@ -34,7 +34,7 @@ type Spaceship struct {
 	BaseObject
 	Objects   chan<- ScreenObject
 	ScreenSvc *ScreenService
-	gameover chan *BaseObject
+	gameover  chan *BaseObject
 }
 
 func (this *Spaceship) Move() {
@@ -52,11 +52,11 @@ func (this *Spaceship) Move() {
 		case GoRight:
 			newX = this.X + this.Speed
 		case Shoot:
-			go Shot(this.ScreenSvc, this.Objects, this.X + 4, this.Y)
+			go Shot(this.ScreenSvc, this.Objects, this.X+4, this.Y)
 		}
-		leftBooundaryIsValid := this.ScreenSvc.IsInsideScreen(newX + 2, this.Y)
-		rightBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX + 5, this.Y)
-		if leftBooundaryIsValid && rightBoundaryIsValid {
+		leftBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX+2, this.Y)
+		rightBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX+5, this.Y)
+		if leftBoundaryIsValid && rightBoundaryIsValid {
 			this.X = newX
 		}
 		this.IsBlocked = true
