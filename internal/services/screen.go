@@ -76,7 +76,9 @@ MainLoop:
 				this.controlChannel <- GoRight
 			case tcell.KeyRune:
 				this.controlChannel <- Shoot
+			default:
 			}
+		default:
 		}
 	}
 }
