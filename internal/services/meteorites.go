@@ -51,7 +51,7 @@ func (this *Meteorite) Move() {
 		}
 		newY := this.Y + this.Speed
 		_, height := this.ScreenSvc.GetScreenSize()
-		if newY > float64(height) + 2 {
+		if newY > float64(height)+2 {
 			this.Deactivate()
 			break
 		}

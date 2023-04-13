@@ -76,7 +76,9 @@ MainLoop:
 			case tcell.KeyRight:
 				this.controlChannel <- GoRight
 			case tcell.KeyRune:
-				this.controlChannel <- Shoot
+				if ev.Rune() == ' ' {
+					this.controlChannel <- Shoot
+				}
 			default:
 			}
 		default:

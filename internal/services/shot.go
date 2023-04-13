@@ -44,7 +44,7 @@ func (this *Shell) Move() {
 
 func (this *Shell) Collide(objects []ScreenObject) {
 	collisionWithAnotherShell := false
-	Loop:
+Loop:
 	for _, obj := range objects {
 		switch obj.(type) {
 		case *Shell:
