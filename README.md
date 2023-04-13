@@ -21,7 +21,7 @@ go mod tidy
 
 Run the game:
 ```shell
-go run cmd/main.py
+go run cmd/main.go
 ```
 
 If everything works fine, a console will display a game screen. A user can move his spaceship using left and right arrow keys and shoot using a space key. If the spaceship collides with a meteorite, the game will be over.
