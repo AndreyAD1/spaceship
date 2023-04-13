@@ -13,6 +13,7 @@ type ScreenObject interface {
 	GetStyle() tcell.Style
 	Unblock()
 	Deactivate()
+	IsActive() bool
 	GetView() string
 	GetDrawStatus() bool
 	MarkDrawn()
@@ -32,6 +33,10 @@ type BaseObject struct {
 
 func (this *BaseObject) Deactivate() {
 	this.Active = false
+}
+
+func (this *BaseObject) IsActive() bool {
+	return this.Active
 }
 
 func (this *BaseObject) Unblock() {

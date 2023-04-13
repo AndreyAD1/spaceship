@@ -41,3 +41,22 @@ func (this *Shell) Move() {
 		this.Objects <- this
 	}
 }
+
+func (this *Shell) Collide(objects []ScreenObject) {
+	collisionWithAnotherShell := false
+	Loop:
+	for _, obj := range objects {
+		switch obj.(type) {
+		case *Shell:
+			if obj != this && !obj.IsActive() {
+				collisionWithAnotherShell = true
+				break Loop
+			}
+		default:
+			collisionWithAnotherShell = false
+		}
+	}
+	if !collisionWithAnotherShell {
+		this.Deactivate()
+	}
+}
