@@ -66,7 +66,7 @@ func (this Application) Run() error {
 				// collision occurred
 				if len(objects) > 1 {
 					for _, object := range objects {
-						object.Deactivate()
+						object.Collide(objects)
 					}
 				}
 				screenObjects[y][x] = []services.ScreenObject{}

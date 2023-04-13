@@ -16,22 +16,22 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
 	for {
-		if rand.Float32() < 0.999 {
+		time.Sleep(time.Millisecond * 1500)
+		if rand.Float32() < 0.5 {
 			continue
 		}
 		baseObject := BaseObject{
 			false,
 			false,
 			true,
-			float64(rand.Intn(width - 3)),
-			-10,
+			float64(rand.Intn(width - 2)),
+			-6,
 			meteoriteStyle,
 			0.01,
 			MeteoriteView,
 		}
 		meteorite := Meteorite{baseObject, events, screenSvc}
 		go meteorite.Move()
-		time.Sleep(time.Second)
 	}
 }
 
@@ -58,5 +58,19 @@ func (this *Meteorite) Move() {
 		this.Y = newY
 		this.IsBlocked = true
 		this.Objects <- this
+	}
+}
+
+func (this *Meteorite) Collide(objects []ScreenObject) {
+	allObjectsAreMeteors := true
+	for _, obj := range objects {
+		switch obj.(type) {
+		case *Meteorite:
+		default:
+			allObjectsAreMeteors = false
+		}
+	}
+	if !allObjectsAreMeteors {
+		this.Deactivate()
 	}
 }

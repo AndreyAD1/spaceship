@@ -16,6 +16,7 @@ type ScreenObject interface {
 	GetView() string
 	GetDrawStatus() bool
 	MarkDrawn()
+	Collide([]ScreenObject)
 }
 
 type BaseObject struct {
@@ -75,4 +76,8 @@ func (this *BaseObject) MarkDrawn() {
 
 func (this *BaseObject) GetDrawStatus() bool {
 	return this.IsDrawn
+}
+
+func (this *BaseObject) Collide(objects []ScreenObject) {
+	this.Deactivate()
 }
