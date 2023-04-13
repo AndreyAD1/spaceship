@@ -124,8 +124,7 @@ func (this *ScreenService) IsInsideScreen(x, y float64) bool {
 }
 
 func (this *ScreenService) Draw(obj ScreenObject) {
-	coords := obj.GetCoordinates()
-	initialX, y := coords[0][0], coords[0][1]
+	initialX, y := obj.GetCornerCoordinates()
 	view := obj.GetView()
 	x := initialX
 	for _, char := range view {

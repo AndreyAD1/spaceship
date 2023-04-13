@@ -41,7 +41,7 @@ func (this Application) Run() error {
 			select {
 			case obj := <-interactiveObjects:
 				interObjects = append(interObjects, obj)
-				coordinates := obj.GetCoordinates()
+				coordinates := obj.GetViewCoordinates()
 				for _, coord_pair := range coordinates {
 					x, y := coord_pair[0], coord_pair[1]
 					if screenService.IsInsideScreen(float64(x), float64(y)) {

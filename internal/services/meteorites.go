@@ -16,22 +16,22 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
 	for {
-		if rand.Float32() < 0.99 {
+		if rand.Float32() < 0.999 {
 			continue
 		}
 		baseObject := BaseObject{
 			false,
 			false,
 			true,
-			float64(rand.Intn(width)),
-			-7,
+			float64(rand.Intn(width - 3)),
+			-10,
 			meteoriteStyle,
 			0.01,
 			MeteoriteView,
 		}
 		meteorite := Meteorite{baseObject, events, screenSvc}
 		go meteorite.Move()
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second)
 	}
 }
 

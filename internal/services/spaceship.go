@@ -52,10 +52,10 @@ func (this *Spaceship) Move() {
 		case GoRight:
 			newX = this.X + this.Speed
 		case Shoot:
-			go Shot(this.ScreenSvc, this.Objects, this.X+4, this.Y)
+			go Shot(this.ScreenSvc, this.Objects, this.X + 2, this.Y - 1)
 		}
-		leftBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX+2, this.Y)
-		rightBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX+5, this.Y)
+		leftBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX, this.Y)
+		rightBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX + 3, this.Y)
 		if leftBoundaryIsValid && rightBoundaryIsValid {
 			this.X = newX
 		}

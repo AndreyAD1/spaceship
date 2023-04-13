@@ -8,7 +8,8 @@ import (
 )
 
 type ScreenObject interface {
-	GetCoordinates() [][]int
+	GetCornerCoordinates() (int, int)
+	GetViewCoordinates() [][]int
 	GetStyle() tcell.Style
 	Unblock()
 	Deactivate()
@@ -37,13 +38,17 @@ func (this *BaseObject) Unblock() {
 	this.IsDrawn = false
 }
 
-func (this *BaseObject) GetCoordinates() [][]int {
+func (this *BaseObject) GetCornerCoordinates() (int, int) {
+	return int(math.Round(this.X)), int(math.Round(this.Y))
+}
+
+func (this *BaseObject) GetViewCoordinates() [][]int {
 	initialX, y := int(math.Round(this.X)), int(math.Round(this.Y))
 	view := this.GetView()
 	x := initialX
 	coordinates := [][]int{}
 	for _, char := range view {
-		if unicode.IsControl(char) {
+		if char == '\n' {
 			y++
 			x = initialX
 			continue
