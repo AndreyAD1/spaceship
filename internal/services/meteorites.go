@@ -17,7 +17,7 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 	width, _ := screenSvc.GetScreenSize()
 	for {
 		time.Sleep(time.Millisecond * 1500)
-		if rand.Float32() < 0.5 {
+		if rand.Float32() < 0.4 {
 			continue
 		}
 		baseObject := BaseObject{
@@ -27,7 +27,7 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 			float64(rand.Intn(width - 2)),
 			-6,
 			meteoriteStyle,
-			0.01,
+			0.02,
 			MeteoriteView,
 		}
 		meteorite := Meteorite{baseObject, events, screenSvc}
