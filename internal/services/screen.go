@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"math"
 	"unicode"
 
@@ -26,9 +27,14 @@ type ScreenService struct {
 func NewScreenService() (*ScreenService, error) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
-		return nil, err
+		return nil,fmt.Errorf("can not get a new screen: %w", err)
 	}
 	if err := screen.Init(); err != nil {
+		err = fmt.Errorf(
+			"can not initialize the new screen %v: %w", 
+			screen, 
+			err,
+		)
 		return nil, err
 	}
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset)
