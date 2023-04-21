@@ -41,27 +41,27 @@ type Meteorite struct {
 	ScreenSvc *ScreenService
 }
 
-func (this *Meteorite) Move() {
+func (meteorite *Meteorite) Move() {
 	for {
-		if this.Active != true {
+		if meteorite.Active != true {
 			break
 		}
-		if this.IsBlocked {
+		if meteorite.IsBlocked {
 			continue
 		}
-		newY := this.Y + this.Speed
-		_, height := this.ScreenSvc.GetScreenSize()
+		newY := meteorite.Y + meteorite.Speed
+		_, height := meteorite.ScreenSvc.GetScreenSize()
 		if newY > float64(height)+2 {
-			this.Deactivate()
+			meteorite.Deactivate()
 			break
 		}
-		this.Y = newY
-		this.IsBlocked = true
-		this.Objects <- this
+		meteorite.Y = newY
+		meteorite.IsBlocked = true
+		meteorite.Objects <- meteorite
 	}
 }
 
-func (this *Meteorite) Collide(objects []ScreenObject) {
+func (meteorite *Meteorite) Collide(objects []ScreenObject) {
 	allObjectsAreMeteors := true
 	for _, obj := range objects {
 		switch obj.(type) {
@@ -71,6 +71,6 @@ func (this *Meteorite) Collide(objects []ScreenObject) {
 		}
 	}
 	if !allObjectsAreMeteors {
-		this.Deactivate()
+		meteorite.Deactivate()
 	}
 }

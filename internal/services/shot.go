@@ -23,32 +23,32 @@ type Shell struct {
 	ScreenSvc *ScreenService
 }
 
-func (this *Shell) Move() {
+func (shell *Shell) Move() {
 	for {
-		if this.Active != true {
+		if shell.Active != true {
 			break
 		}
-		if this.IsBlocked {
+		if shell.IsBlocked {
 			continue
 		}
-		newY := this.Y - this.Speed
-		if !this.ScreenSvc.IsInsideScreen(this.X, newY) {
-			this.Deactivate()
+		newY := shell.Y - shell.Speed
+		if !shell.ScreenSvc.IsInsideScreen(shell.X, newY) {
+			shell.Deactivate()
 			break
 		}
-		this.Y = newY
-		this.IsBlocked = true
-		this.Objects <- this
+		shell.Y = newY
+		shell.IsBlocked = true
+		shell.Objects <- shell
 	}
 }
 
-func (this *Shell) Collide(objects []ScreenObject) {
+func (shell *Shell) Collide(objects []ScreenObject) {
 	collisionWithAnotherShell := false
 Loop:
 	for _, obj := range objects {
 		switch obj.(type) {
 		case *Shell:
-			if obj != this && !obj.IsActive() {
+			if obj != shell && !obj.IsActive() {
 				collisionWithAnotherShell = true
 				break Loop
 			}
@@ -57,6 +57,6 @@ Loop:
 		}
 	}
 	if !collisionWithAnotherShell {
-		this.Deactivate()
+		shell.Deactivate()
 	}
 }

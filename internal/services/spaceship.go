@@ -37,30 +37,30 @@ type Spaceship struct {
 	gameover  chan *BaseObject
 }
 
-func (this *Spaceship) Move() {
+func (spaceship *Spaceship) Move() {
 	for {
-		if !this.Active {
+		if !spaceship.Active {
 			break
 		}
-		if this.IsBlocked {
+		if spaceship.IsBlocked {
 			continue
 		}
-		newX := this.X
-		switch event := this.ScreenSvc.GetControlEvent(); event {
+		newX := spaceship.X
+		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
-			newX = this.X - this.Speed
+			newX = spaceship.X - spaceship.Speed
 		case GoRight:
-			newX = this.X + this.Speed
+			newX = spaceship.X + spaceship.Speed
 		case Shoot:
-			go Shot(this.ScreenSvc, this.Objects, this.X+2, this.Y-1)
+			go Shot(spaceship.ScreenSvc, spaceship.Objects, spaceship.X+2, spaceship.Y-1)
 		}
-		leftBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX, this.Y)
-		rightBoundaryIsValid := this.ScreenSvc.IsInsideScreen(newX+3, this.Y)
+		leftBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(newX, spaceship.Y)
+		rightBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(newX+3, spaceship.Y)
 		if leftBoundaryIsValid && rightBoundaryIsValid {
-			this.X = newX
+			spaceship.X = newX
 		}
-		this.IsBlocked = true
-		this.Objects <- this
+		spaceship.IsBlocked = true
+		spaceship.Objects <- spaceship
 	}
-	go DrawGameOver(this.gameover, this.ScreenSvc)
+	go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 }

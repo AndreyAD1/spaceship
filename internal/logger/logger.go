@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func GetNewLogger(configuration config.StartupConfig) (*log.Logger, error) {
+func NewLogger(configuration config.StartupConfig) (*log.Logger, error) {
 	var logFile io.Writer
 	var err error
 	if configuration.LogFile == "" {

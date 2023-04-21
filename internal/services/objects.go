@@ -31,26 +31,26 @@ type BaseObject struct {
 	View      string
 }
 
-func (this *BaseObject) Deactivate() {
-	this.Active = false
+func (baseObject *BaseObject) Deactivate() {
+	baseObject.Active = false
 }
 
-func (this *BaseObject) IsActive() bool {
-	return this.Active
+func (baseObject *BaseObject) IsActive() bool {
+	return baseObject.Active
 }
 
-func (this *BaseObject) Unblock() {
-	this.IsBlocked = false
-	this.IsDrawn = false
+func (baseObject *BaseObject) Unblock() {
+	baseObject.IsBlocked = false
+	baseObject.IsDrawn = false
 }
 
-func (this *BaseObject) GetCornerCoordinates() (int, int) {
-	return int(math.Round(this.X)), int(math.Round(this.Y))
+func (baseObject *BaseObject) GetCornerCoordinates() (int, int) {
+	return int(math.Round(baseObject.X)), int(math.Round(baseObject.Y))
 }
 
-func (this *BaseObject) GetViewCoordinates() [][]int {
-	initialX, y := int(math.Round(this.X)), int(math.Round(this.Y))
-	view := this.GetView()
+func (baseObject *BaseObject) GetViewCoordinates() [][]int {
+	initialX, y := int(math.Round(baseObject.X)), int(math.Round(baseObject.Y))
+	view := baseObject.GetView()
 	x := initialX
 	coordinates := [][]int{}
 	for _, char := range view {
@@ -67,22 +67,22 @@ func (this *BaseObject) GetViewCoordinates() [][]int {
 	return coordinates
 }
 
-func (this *BaseObject) GetStyle() tcell.Style {
-	return this.Style
+func (baseObject *BaseObject) GetStyle() tcell.Style {
+	return baseObject.Style
 }
 
-func (this *BaseObject) GetView() string {
-	return this.View
+func (baseObject *BaseObject) GetView() string {
+	return baseObject.View
 }
 
-func (this *BaseObject) MarkDrawn() {
-	this.IsDrawn = true
+func (baseObject *BaseObject) MarkDrawn() {
+	baseObject.IsDrawn = true
 }
 
-func (this *BaseObject) GetDrawStatus() bool {
-	return this.IsDrawn
+func (baseObject *BaseObject) GetDrawStatus() bool {
+	return baseObject.IsDrawn
 }
 
-func (this *BaseObject) Collide(objects []ScreenObject) {
-	this.Deactivate()
+func (baseObject *BaseObject) Collide(objects []ScreenObject) {
+	baseObject.Deactivate()
 }

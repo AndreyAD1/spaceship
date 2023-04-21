@@ -16,8 +16,8 @@ func GetApplication(logger *log.Logger) Application {
 	return Application{logger, 10 * time.Millisecond}
 }
 
-func (this Application) Run() error {
-	screenService, err := services.GetScreenService()
+func (app Application) Run() error {
+	screenService, err := services.NewScreenService()
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (this Application) Run() error {
 
 	screenObjects := screenService.GetObjectList()
 	interObjects := []services.ScreenObject{}
-	this.Logger.Debug("start an event loop")
+	app.Logger.Debug("start an event loop")
 	for {
 		if screenService.Exit() {
 			break
@@ -83,9 +83,9 @@ func (this Application) Run() error {
 		}
 
 		screenService.ShowScreen()
-		time.Sleep(this.FrameTimeout)
+		time.Sleep(app.FrameTimeout)
 		screenService.ClearScreen()
 	}
-	this.Logger.Debug("finish the event loop")
+	app.Logger.Debug("finish the event loop")
 	return nil
 }

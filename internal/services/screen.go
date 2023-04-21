@@ -23,7 +23,7 @@ type ScreenService struct {
 	controlChannel chan ScreenEvent
 }
 
-func GetScreenService() (*ScreenService, error) {
+func NewScreenService() (*ScreenService, error) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
 		return nil, err
@@ -40,22 +40,22 @@ func GetScreenService() (*ScreenService, error) {
 	newSvc := ScreenService{
 		screen,
 		make(chan struct{}),
-		// a channel buffer allows user to exit in a game over state
+		// a channel buffer allows user to exit in a gameover state
 		make(chan ScreenEvent, 15),
 	}
 	return &newSvc, nil
 }
 
-func (this *ScreenService) PollScreenEvents() {
+func (screenSvc *ScreenService) PollScreenEvents() {
 MainLoop:
 	for {
 		var event tcell.Event
-		for this.screen.HasPendingEvent() {
-			event = this.screen.PollEvent()
+		for screenSvc.screen.HasPendingEvent() {
+			event = screenSvc.screen.PollEvent()
 			if ev, ok := event.(*tcell.EventKey); ok {
 				if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
-					this.exitChannel <- struct{}{}
-					close(this.exitChannel)
+					screenSvc.exitChannel <- struct{}{}
+					close(screenSvc.exitChannel)
 					break MainLoop
 				}
 			}
@@ -64,20 +64,20 @@ MainLoop:
 		case *tcell.EventKey:
 			switch ev.Key() {
 			case tcell.KeyEscape:
-				this.exitChannel <- struct{}{}
-				close(this.exitChannel)
+				screenSvc.exitChannel <- struct{}{}
+				close(screenSvc.exitChannel)
 				break MainLoop
 			case tcell.KeyCtrlC:
-				this.exitChannel <- struct{}{}
-				close(this.exitChannel)
+				screenSvc.exitChannel <- struct{}{}
+				close(screenSvc.exitChannel)
 				break MainLoop
 			case tcell.KeyLeft:
-				this.controlChannel <- GoLeft
+				screenSvc.controlChannel <- GoLeft
 			case tcell.KeyRight:
-				this.controlChannel <- GoRight
+				screenSvc.controlChannel <- GoRight
 			case tcell.KeyRune:
 				if ev.Rune() == ' ' {
-					this.controlChannel <- Shoot
+					screenSvc.controlChannel <- Shoot
 				}
 			default:
 			}
@@ -86,38 +86,38 @@ MainLoop:
 	}
 }
 
-func (this *ScreenService) Exit() bool {
+func (screenSvc *ScreenService) Exit() bool {
 	select {
-	case <-this.exitChannel:
+	case <-screenSvc.exitChannel:
 		return true
 	default:
 		return false
 	}
 }
 
-func (this *ScreenService) GetControlEvent() ScreenEvent {
+func (screenSvc *ScreenService) GetControlEvent() ScreenEvent {
 	select {
-	case event := <-this.controlChannel:
+	case event := <-screenSvc.controlChannel:
 		return event
 	default:
 		return NoEvent
 	}
 }
 
-func (this *ScreenService) ClearScreen() {
-	this.screen.Clear()
+func (screenSvc *ScreenService) ClearScreen() {
+	screenSvc.screen.Clear()
 }
 
-func (this *ScreenService) ShowScreen() {
-	this.screen.Show()
+func (screenSvc *ScreenService) ShowScreen() {
+	screenSvc.screen.Show()
 }
 
-func (this *ScreenService) Finish() {
-	this.screen.Fini()
+func (screenSvc *ScreenService) Finish() {
+	screenSvc.screen.Fini()
 }
 
-func (this *ScreenService) IsInsideScreen(x, y float64) bool {
-	width, height := this.screen.Size()
+func (screenSvc *ScreenService) IsInsideScreen(x, y float64) bool {
+	width, height := screenSvc.screen.Size()
 	roundX, roundY := int(math.Round(x)), int(math.Round(y))
 	if roundX >= width-1 || roundX < 0 || roundY >= height || roundY < 0 {
 		return false
@@ -125,7 +125,7 @@ func (this *ScreenService) IsInsideScreen(x, y float64) bool {
 	return true
 }
 
-func (this *ScreenService) Draw(obj ScreenObject) {
+func (screenSvc *ScreenService) Draw(obj ScreenObject) {
 	initialX, y := obj.GetCornerCoordinates()
 	view := obj.GetView()
 	x := initialX
@@ -136,14 +136,14 @@ func (this *ScreenService) Draw(obj ScreenObject) {
 			continue
 		}
 		if !unicode.IsSpace(char) {
-			this.screen.SetContent(x, y, char, nil, obj.GetStyle())
+			screenSvc.screen.SetContent(x, y, char, nil, obj.GetStyle())
 		}
 		x++
 	}
 }
 
-func (this *ScreenService) GetObjectList() [][][]ScreenObject {
-	width, height := this.screen.Size()
+func (screenSvc *ScreenService) GetObjectList() [][][]ScreenObject {
+	width, height := screenSvc.screen.Size()
 	newList := make([][][]ScreenObject, height)
 	for i := 0; i < height; i++ {
 		newList[i] = make([][]ScreenObject, width)
@@ -154,6 +154,6 @@ func (this *ScreenService) GetObjectList() [][][]ScreenObject {
 	return newList
 }
 
-func (this *ScreenService) GetScreenSize() (int, int) {
-	return this.screen.Size()
+func (screenSvc *ScreenService) GetScreenSize() (int, int) {
+	return screenSvc.screen.Size()
 }

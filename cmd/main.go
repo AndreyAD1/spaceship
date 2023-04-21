@@ -26,7 +26,7 @@ func main() {
 	if *logFile != "" {
 		configuration.LogFile = *logFile
 	}
-	newLogger, err := logger.GetNewLogger(configuration)
+	newLogger, err := logger.NewLogger(configuration)
 	if err != nil {
 		log.Fatal(err)
 	}
