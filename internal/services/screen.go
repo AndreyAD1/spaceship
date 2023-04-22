@@ -1,10 +1,12 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"unicode"
 
+	"github.com/charmbracelet/log"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -27,7 +29,7 @@ type ScreenService struct {
 func NewScreenService() (*ScreenService, error) {
 	screen, err := tcell.NewScreen()
 	if err != nil {
-		return nil,fmt.Errorf("can not get a new screen: %w", err)
+		return nil, fmt.Errorf("can not get a new screen: %w", err)
 	}
 	if err := screen.Init(); err != nil {
 		err = fmt.Errorf(
@@ -52,7 +54,8 @@ func NewScreenService() (*ScreenService, error) {
 	return &newSvc, nil
 }
 
-func (screenSvc *ScreenService) PollScreenEvents() {
+func (screenSvc *ScreenService) PollScreenEvents(ctx context.Context) {
+	logger := log.FromContext(ctx)
 MainLoop:
 	for {
 		var event tcell.Event
@@ -82,6 +85,7 @@ MainLoop:
 			case tcell.KeyRight:
 				screenSvc.controlChannel <- GoRight
 			case tcell.KeyRune:
+				logger.Debugf("key \"%c\" is pressed", ev.Rune())
 				if ev.Rune() == ' ' {
 					screenSvc.controlChannel <- Shoot
 				}

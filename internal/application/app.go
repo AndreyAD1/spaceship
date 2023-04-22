@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"time"
 
 	"github.com/AndreyAD1/spaceship/internal/services"
@@ -12,11 +13,12 @@ type Application struct {
 	FrameTimeout time.Duration
 }
 
-func GetApplication(logger *log.Logger) Application {
+func NewApplication(logger *log.Logger) Application {
 	return Application{logger, 10 * time.Millisecond}
 }
 
 func (app Application) Run() error {
+	ctx := log.WithContext(context.Background(), app.Logger)
 	screenService, err := services.NewScreenService()
 	if err != nil {
 		return err
@@ -27,7 +29,7 @@ func (app Application) Run() error {
 	gameoverChannel := make(chan *services.BaseObject)
 	go services.GenerateMeteorites(interactiveObjects, screenService)
 	services.GenerateShip(interactiveObjects, screenService, gameoverChannel)
-	go screenService.PollScreenEvents()
+	go screenService.PollScreenEvents(ctx)
 
 	screenObjects := screenService.GetObjectList()
 	interObjects := []services.ScreenObject{}

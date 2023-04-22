@@ -35,7 +35,7 @@ func main() {
 			newLogger.Errorf("Internal error: %v", p)
 		}
 	}()
-	app := application.GetApplication(newLogger)
+	app := application.NewApplication(newLogger)
 	newLogger.Debug("run application")
 	err = app.Run()
 	if err != nil {

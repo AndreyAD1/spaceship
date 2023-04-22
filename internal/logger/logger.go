@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -17,7 +18,7 @@ func NewLogger(configuration config.StartupConfig) (*log.Logger, error) {
 		logFile, err = os.Create(configuration.LogFile)
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can not create a new logger: %w", err)
 	}
 	logger := log.New(logFile)
 	logger.SetLevel(log.InfoLevel)
