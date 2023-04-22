@@ -21,6 +21,8 @@ func NewLogger(configuration config.StartupConfig) (*log.Logger, error) {
 		return nil, fmt.Errorf("can not create a new logger: %w", err)
 	}
 	logger := log.New(logFile)
+	logger.SetReportTimestamp(true)
+	logger.SetReportCaller(true)
 	logger.SetLevel(log.InfoLevel)
 	if configuration.Debug {
 		logger.SetLevel(log.DebugLevel)
