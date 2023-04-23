@@ -88,7 +88,6 @@ func processInteractiveObjects(
 	}
 }
 
-
 func getScreenObjects(
 	objectChannel chan services.ScreenObject,
 	screenService *services.ScreenService,
