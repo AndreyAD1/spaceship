@@ -59,27 +59,10 @@ func drawStars(chan services.ScreenObject, *services.ScreenService) {
 }
 
 func processInteractiveObjects(
-	interactiveObjects chan services.ScreenObject,
+	objectChannel chan services.ScreenObject,
 	screenService *services.ScreenService,
 ) {
-	screenObjects := screenService.GetObjectList()
-	interObjects := []services.ScreenObject{}
-ObjectLoop:
-	for {
-		select {
-		case obj := <-interactiveObjects:
-			interObjects = append(interObjects, obj)
-			coordinates := obj.GetViewCoordinates()
-			for _, coord_pair := range coordinates {
-				x, y := coord_pair[0], coord_pair[1]
-				if screenService.IsInsideScreen(float64(x), float64(y)) {
-					screenObjects[y][x] = append(screenObjects[y][x], obj)
-				}
-			}
-		default:
-			break ObjectLoop
-		}
-	}
+	screenObjects, interObjects := getScreenObjects(objectChannel, screenService)
 	for y, row := range screenObjects {
 		for x, objects := range row {
 			if len(objects) == 0 {
@@ -97,11 +80,36 @@ ObjectLoop:
 					object.Collide(objects)
 				}
 			}
-			screenObjects[y][x] = []services.ScreenObject{}
 		}
 	}
 
 	for _, object := range interObjects {
 		object.Unblock()
 	}
+}
+
+
+func getScreenObjects(
+	objectChannel chan services.ScreenObject,
+	screenService *services.ScreenService,
+) ([][][]services.ScreenObject, []services.ScreenObject) {
+	screenObjects := screenService.GetObjectList()
+	interObjects := []services.ScreenObject{}
+ObjectLoop:
+	for {
+		select {
+		case obj := <-objectChannel:
+			interObjects = append(interObjects, obj)
+			coordinates := obj.GetViewCoordinates()
+			for _, coord_pair := range coordinates {
+				x, y := coord_pair[0], coord_pair[1]
+				if screenService.IsInsideScreen(float64(x), float64(y)) {
+					screenObjects[y][x] = append(screenObjects[y][x], obj)
+				}
+			}
+		default:
+			break ObjectLoop
+		}
+	}
+	return screenObjects, interObjects
 }
