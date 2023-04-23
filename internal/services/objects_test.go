@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/AndreyAD1/spaceship/internal/services"
@@ -37,8 +38,79 @@ func TestBaseObject_GetCornerCoordinates(t *testing.T) {
 				View:      "A",
 			}
 			x, y := baseObject.GetCornerCoordinates()
-			require.Equal(t, x, tt.expectedX)
-			require.Equal(t, y, tt.expectedY)
+			require.Equal(t, tt.expectedX, x)
+			require.Equal(t, tt.expectedY, y)
+		})
+	}
+}
+
+func TestBaseObject_GetViewCoordinates(t *testing.T) {
+	type fields struct {
+		X    float64
+		Y    float64
+		View string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		expected [][]int
+	}{
+		{
+			"shell 0-0",
+			fields{0.0, 0.0, "|"},
+			[][]int{{0, 0}},
+		},
+		{
+			"shell 3-5",
+			fields{2.8, 5.1, "|"},
+			[][]int{{3, 5}},
+		},
+		{
+			"multiline",
+			fields{
+				2.8,
+				5.1,
+				`  __  
+||  |
+`,
+			},
+			[][]int{{5, 5}, {6, 5}, {3, 6}, {4, 6}, {7, 6}},
+		},
+		{
+			"meteorite",
+			fields{
+				2.3,
+				-1.4,
+				services.MeteoriteView,
+			},
+			[][]int{
+				{4, -1}, {5, -1}, {6, -1},
+				{3, 0}, {7, 0},
+				{2, 1}, {8, 1},
+				{2, 2}, {3, 2}, {4, 2}, {5, 2}, {6, 2}, {7, 2},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			baseObject := &services.BaseObject{
+				IsBlocked: false,
+				IsDrawn:   false,
+				Active:    true,
+				X:         tt.fields.X,
+				Y:         tt.fields.Y,
+				Style:     tcell.StyleDefault.Background(tcell.ColorReset),
+				Speed:     1,
+				View:      tt.fields.View,
+			}
+			coords := baseObject.GetViewCoordinates()
+			require.Condition(
+				t,
+				func() bool { return reflect.DeepEqual(coords, tt.expected) },
+				"BaseObject.GetViewCoordinates() = %v, want %v",
+				coords,
+				tt.expected,
+			)
 		})
 	}
 }

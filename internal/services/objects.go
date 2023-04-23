@@ -49,7 +49,7 @@ func (baseObject *BaseObject) GetCornerCoordinates() (int, int) {
 }
 
 func (baseObject *BaseObject) GetViewCoordinates() [][]int {
-	initialX, y := int(math.Round(baseObject.X)), int(math.Round(baseObject.Y))
+	initialX, y := baseObject.GetCornerCoordinates()
 	view := baseObject.GetView()
 	x := initialX
 	coordinates := [][]int{}
