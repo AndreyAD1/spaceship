@@ -33,8 +33,8 @@ func NewScreenService() (*ScreenService, error) {
 	}
 	if err := screen.Init(); err != nil {
 		err = fmt.Errorf(
-			"can not initialize the new screen %v: %w", 
-			screen, 
+			"can not initialize the new screen %v: %w",
+			screen,
 			err,
 		)
 		return nil, err

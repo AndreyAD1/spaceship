@@ -25,69 +25,83 @@ func (app Application) Run() error {
 	}
 	defer screenService.Exit()
 
-	interactiveObjects := make(chan services.ScreenObject)
+	starChannel := make(chan services.ScreenObject)
+	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
-	go services.GenerateMeteorites(interactiveObjects, screenService)
-	services.GenerateShip(interactiveObjects, screenService, gameoverChannel)
+
+	go services.GenerateMeteorites(interactiveChannel, screenService)
+	services.GenerateShip(interactiveChannel, screenService, gameoverChannel)
 	go screenService.PollScreenEvents(ctx)
 
-	screenObjects := screenService.GetObjectList()
-	interObjects := []services.ScreenObject{}
 	app.Logger.Debug("start an event loop")
 	for {
 		if screenService.Exit() {
 			break
 		}
-	ObjectLoop:
-		for {
-			select {
-			case obj := <-interactiveObjects:
-				interObjects = append(interObjects, obj)
-				coordinates := obj.GetViewCoordinates()
-				for _, coord_pair := range coordinates {
-					x, y := coord_pair[0], coord_pair[1]
-					if screenService.IsInsideScreen(float64(x), float64(y)) {
-						screenObjects[y][x] = append(screenObjects[y][x], obj)
-					}
-				}
-			default:
-				break ObjectLoop
-			}
-		}
-		for y, row := range screenObjects {
-			for x, objects := range row {
-				if len(objects) == 0 {
-					continue
-				}
-				if len(objects) == 1 && !objects[0].GetDrawStatus() {
-					screenService.Draw(objects[0])
-					objects[0].MarkDrawn()
-					screenObjects[y][x] = []services.ScreenObject{}
-					continue
-				}
-				// collision occurred
-				if len(objects) > 1 {
-					for _, object := range objects {
-						object.Collide(objects)
-					}
-				}
-				screenObjects[y][x] = []services.ScreenObject{}
-			}
-		}
-		for _, object := range interObjects {
-			object.Unblock()
-		}
-		interObjects = []services.ScreenObject{}
+		drawStars(starChannel, screenService)
+		processInteractiveObjects(interactiveChannel, screenService)
 		select {
 		case gameover := <-gameoverChannel:
 			screenService.Draw(gameover)
 		default:
 		}
-
 		screenService.ShowScreen()
 		time.Sleep(app.FrameTimeout)
 		screenService.ClearScreen()
 	}
 	app.Logger.Debug("finish the event loop")
 	return nil
+}
+
+// this function will draw stars
+func drawStars(chan services.ScreenObject, *services.ScreenService) {
+	return
+}
+
+func processInteractiveObjects(
+	interactiveObjects chan services.ScreenObject,
+	screenService *services.ScreenService,
+) {
+	screenObjects := screenService.GetObjectList()
+	interObjects := []services.ScreenObject{}
+ObjectLoop:
+	for {
+		select {
+		case obj := <-interactiveObjects:
+			interObjects = append(interObjects, obj)
+			coordinates := obj.GetViewCoordinates()
+			for _, coord_pair := range coordinates {
+				x, y := coord_pair[0], coord_pair[1]
+				if screenService.IsInsideScreen(float64(x), float64(y)) {
+					screenObjects[y][x] = append(screenObjects[y][x], obj)
+				}
+			}
+		default:
+			break ObjectLoop
+		}
+	}
+	for y, row := range screenObjects {
+		for x, objects := range row {
+			if len(objects) == 0 {
+				continue
+			}
+			if len(objects) == 1 && !objects[0].GetDrawStatus() {
+				screenService.Draw(objects[0])
+				objects[0].MarkDrawn()
+				screenObjects[y][x] = []services.ScreenObject{}
+				continue
+			}
+			// collision occurred
+			if len(objects) > 1 {
+				for _, object := range objects {
+					object.Collide(objects)
+				}
+			}
+			screenObjects[y][x] = []services.ScreenObject{}
+		}
+	}
+
+	for _, object := range interObjects {
+		object.Unblock()
+	}
 }
