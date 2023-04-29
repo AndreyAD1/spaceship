@@ -20,6 +20,19 @@ const (
 	Shoot
 )
 
+type ScreenSvc interface {
+	PollScreenEvents(ctx context.Context)
+	Exit() bool
+	GetControlEvent() ScreenEvent
+	ClearScreen()
+	ShowScreen()
+	Finish()
+	IsInsideScreen(x, y float64) bool
+	Draw(obj ScreenObject)
+	GetObjectList() [][][]ScreenObject
+	GetScreenSize() (int, int)
+}
+
 type ScreenService struct {
 	screen         tcell.Screen
 	exitChannel    chan struct{}

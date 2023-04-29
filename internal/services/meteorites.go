@@ -38,7 +38,7 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 type Meteorite struct {
 	BaseObject
 	Objects   chan<- ScreenObject
-	ScreenSvc *ScreenService
+	ScreenSvc ScreenSvc
 }
 
 func (meteorite *Meteorite) Move() {
