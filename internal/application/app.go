@@ -23,7 +23,7 @@ func (app Application) Run() error {
 	if err != nil {
 		return err
 	}
-	defer screenService.Exit()
+	defer screenService.Finish()
 
 	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
