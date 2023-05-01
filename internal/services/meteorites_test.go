@@ -93,16 +93,85 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 		ScreenSvc:  MockedScreenSvc,
 	}
 	go meteorite.Move()
+
 	select {
-	case <- objectChannel:
-	case <- time.After(100 * time.Millisecond):
+	case <-objectChannel:
+	case <-time.After(100 * time.Millisecond):
 	}
+
 	meteorite.IsBlocked = false
+	
 	select {
 	case receivedMeteorite := <-objectChannel:
 		t.Errorf("a meteorite left the screen but appeared in the channel")
 		require.Equal(t, meteorite, receivedMeteorite)
 	case <-time.After(100 * time.Millisecond):
 	}
+
 	require.False(t, meteorite.Active)
+}
+
+func TestMeteorite_Collide(t *testing.T) {
+	baseObject := services.BaseObject{
+		false,
+		false,
+		true,
+		0,
+		0,
+		tcell.StyleDefault.Background(tcell.ColorReset),
+		1,
+		services.MeteoriteView,
+	}
+	objectChannel := make(chan<- services.ScreenObject)
+	screenMock := mocks.NewScreenSvc(t)
+	tests := []struct {
+		name              string
+		collisionObjects  []services.ScreenObject
+		expectActiveState bool
+	}{
+		{
+			"no objects collide",
+			[]services.ScreenObject{},
+			true,
+		},
+		{
+			"collide with meoteorites",
+			[]services.ScreenObject{
+				&services.Meteorite{
+					BaseObject: baseObject,
+					Objects:    objectChannel,
+					ScreenSvc:  screenMock,
+				},
+				&services.Meteorite{
+					BaseObject: baseObject,
+					Objects:    objectChannel,
+					ScreenSvc:  screenMock,
+				},
+			},
+			true,
+		},
+		{
+			"collide the other object",
+			[]services.ScreenObject{
+				&services.Meteorite{
+					BaseObject: baseObject,
+					Objects:    objectChannel,
+					ScreenSvc:  screenMock,
+				},
+				&baseObject,
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			meteorite := &services.Meteorite{
+				BaseObject: baseObject,
+				Objects:    objectChannel,
+				ScreenSvc:  screenMock,
+			}
+			meteorite.Collide(tt.collisionObjects)
+			require.Equal(t, tt.expectActiveState, meteorite.Active)
+		})
+	}
 }
