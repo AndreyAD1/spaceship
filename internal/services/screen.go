@@ -61,7 +61,7 @@ func NewScreenService() (*ScreenService, error) {
 	newSvc := ScreenService{
 		screen,
 		make(chan struct{}),
-		// a channel buffer allows user to exit in a gameover state
+		// a channel buffer allows a user to exit in a gameover state
 		make(chan ScreenEvent, 15),
 	}
 	return &newSvc, nil
@@ -82,8 +82,7 @@ MainLoop:
 				}
 			}
 		}
-		switch ev := event.(type) {
-		case *tcell.EventKey:
+		if ev, ok := event.(*tcell.EventKey); ok {
 			switch ev.Key() {
 			case tcell.KeyEscape:
 				screenSvc.exitChannel <- struct{}{}
@@ -102,9 +101,7 @@ MainLoop:
 				if ev.Rune() == ' ' {
 					screenSvc.controlChannel <- Shoot
 				}
-			default:
 			}
-		default:
 		}
 	}
 }
