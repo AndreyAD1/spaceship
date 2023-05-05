@@ -100,7 +100,7 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 	}
 
 	meteorite.IsBlocked = false
-	
+
 	select {
 	case receivedMeteorite := <-objectChannel:
 		t.Errorf("a meteorite left the screen but appeared in the channel")
