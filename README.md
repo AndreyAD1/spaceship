@@ -30,7 +30,12 @@ If everything works fine, a console will display a game screen. A user can move 
 
 ## Development
 
-Currently, there are no tests in the project. You can run a debug mode using special command line arguments.
+Run the project tests: 
+```shell
+go test ./...
+```
+
+You can run a debug mode using special command line arguments.
 ```shell
 go run cmd/main.go -debug true -log_file=spaceship.log
 ```
