@@ -74,6 +74,7 @@ MainLoop:
 		var event tcell.Event
 		for screenSvc.screen.HasPendingEvent() {
 			event = screenSvc.screen.PollEvent()
+			logger.Debugf("receive a screen event %v", event)
 			if ev, ok := event.(*tcell.EventKey); ok {
 				if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 					screenSvc.exitChannel <- struct{}{}
