@@ -85,14 +85,6 @@ MainLoop:
 		}
 		if ev, ok := event.(*tcell.EventKey); ok {
 			switch ev.Key() {
-			case tcell.KeyEscape:
-				screenSvc.exitChannel <- struct{}{}
-				close(screenSvc.exitChannel)
-				break MainLoop
-			case tcell.KeyCtrlC:
-				screenSvc.exitChannel <- struct{}{}
-				close(screenSvc.exitChannel)
-				break MainLoop
 			case tcell.KeyLeft:
 				screenSvc.controlChannel <- GoLeft
 			case tcell.KeyRight:
