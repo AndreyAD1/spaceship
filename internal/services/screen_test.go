@@ -21,16 +21,15 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
 	ctx := log.WithContext(context.Background(), logger)
-	buff := []byte{}
+	keySet := []byte{}
 	keys := []uint64{
 		uint64(tcell.KeyLeft),
 		uint64(tcell.KeyLeft),
 		uint64(' '),
 		uint64(tcell.KeyRight),
-		uint64(tcell.KeyCtrlC),
 	}
 	for _, key := range keys {
-		binary.AppendUvarint(buff, key)
+		binary.AppendUvarint(keySet, key)
 	}
 
 	tests := []struct {
@@ -38,9 +37,22 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 		keyBytes []byte
 	}{
 		{"immediate exit", []byte{byte(tcell.KeyCtrlC)}},
+		{"immediate exit", []byte{byte(tcell.KeyEscape)}},
 		{
-			"discard other keys and exit",
-			buff,
+			"discard other keys and exit after Ctrc+C",
+			append(keySet, byte(tcell.KeyCtrlC)),
+		},
+		{
+			"discard other keys and exit after Escape",
+			append(keySet, byte(tcell.KeyEscape)),
+		},
+		{
+			"several exit commands",
+			[]byte{byte(tcell.KeyCtrlC), byte(tcell.KeyEscape)},
+		},
+		{
+			"several exit commands",
+			[]byte{byte(tcell.KeyCtrlC), byte(tcell.KeyCtrlC)},
 		},
 	}
 	for _, tt := range tests {
