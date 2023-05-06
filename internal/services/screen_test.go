@@ -51,8 +51,12 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 			[]byte{byte(tcell.KeyCtrlC), byte(tcell.KeyEscape)},
 		},
 		{
-			"several exit commands",
+			"several exit Ctrl+C",
 			[]byte{byte(tcell.KeyCtrlC), byte(tcell.KeyCtrlC)},
+		},
+		{
+			"exit command is in the middle",
+			append(keySet, []byte{byte(tcell.KeyEscape), byte(' ')}...),
 		},
 	}
 	for _, tt := range tests {
