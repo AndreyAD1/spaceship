@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/binary"
 	"os"
 	"testing"
 	"time"
@@ -16,42 +15,38 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
 	ctx := log.WithContext(context.Background(), logger)
-	keySet := []byte{}
-	keys := []uint64{
-		uint64(tcell.KeyLeft),
-		uint64(tcell.KeyLeft),
-		uint64(' '),
-		uint64(tcell.KeyRight),
-	}
-	for _, key := range keys {
-		binary.AppendUvarint(keySet, key)
+	keys := []tcell.Key{
+		tcell.KeyLeft,
+		tcell.KeyLeft,
+		tcell.KeyRune,
+		tcell.KeyRight,
 	}
 
 	tests := []struct {
-		name     string
-		keyBytes []byte
+		name       string
+		pushedKeys []tcell.Key
 	}{
-		{"immediate exit", []byte{byte(tcell.KeyCtrlC)}},
-		{"immediate exit", []byte{byte(tcell.KeyEscape)}},
+		{"immediate exit Ctrl+C", []tcell.Key{tcell.KeyCtrlC}},
+		{"immediate exit Escape", []tcell.Key{tcell.KeyEscape}},
 		{
-			"discard other keys and exit after Ctrc+C",
-			append(keySet, byte(tcell.KeyCtrlC)),
+			"discard other keys and exit after Ctrl+C",
+			append(keys, tcell.KeyCtrlC),
 		},
 		{
 			"discard other keys and exit after Escape",
-			append(keySet, byte(tcell.KeyEscape)),
+			append(keys, tcell.KeyEscape),
 		},
 		{
 			"several exit commands",
-			[]byte{byte(tcell.KeyCtrlC), byte(tcell.KeyEscape)},
+			[]tcell.Key{tcell.KeyCtrlC, tcell.KeyEscape},
 		},
 		{
 			"several exit Ctrl+C",
-			[]byte{byte(tcell.KeyCtrlC), byte(tcell.KeyCtrlC)},
+			[]tcell.Key{tcell.KeyCtrlC, tcell.KeyCtrlC},
 		},
 		{
 			"exit command is in the middle",
-			append(keySet, []byte{byte(tcell.KeyEscape), ' '}...),
+			append(keys, []tcell.Key{tcell.KeyEscape, tcell.KeyRune}...),
 		},
 	}
 	for _, tt := range tests {
@@ -67,7 +62,9 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 				controlChannel: make(chan ScreenEvent),
 			}
 			go screenSvc.PollScreenEvents(ctx)
-			screenMock.InjectKeyBytes(tt.keyBytes)
+			for _, key := range tt.pushedKeys {
+				screenMock.InjectKey(key, ' ', tcell.ModNone)
+			}
 			select {
 			case <-exitChannel:
 			case <-time.After(10 * time.Millisecond):
@@ -84,44 +81,32 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 }
 
 func TestScreenService_PollScreenEvents_Controls(t *testing.T) {
-	screenMock := tcell.NewSimulationScreen("")
-	defer screenMock.Fini()
-	err := screenMock.Init()
-	require.NoError(t, err)
-
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
 	ctx := log.WithContext(context.Background(), logger)
-
-	keySet := []byte{}
-	keys := []uint64{
-		uint64(tcell.KeyLeft),
-		uint64(tcell.KeyLeft),
-		uint64(' '),
-		uint64(tcell.KeyRight),
-	}
-	for _, key := range keys {
-		binary.AppendUvarint(keySet, key)
-	}
-
 	tests := []struct {
 		name     string
-		keyBytes []byte
+		pushedKeys []tcell.Key
 		expectedEvent ScreenEvent
 	}{
 		{
 			"one key event",
-			[]byte{' '},
+			[]tcell.Key{tcell.KeyRune},
 			Shoot,
 		},
 		{
 			"several events",
-			keySet,
+			[]tcell.Key{tcell.KeyLeft, tcell.KeyLeft, tcell.KeyRune, tcell.KeyRight},
 			GoRight,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			screenMock := tcell.NewSimulationScreen("")
+			defer screenMock.Fini()
+			err := screenMock.Init()
+			require.NoError(t, err)
+		
 			exitChannel := make(chan struct{})
 			screenSvc := &ScreenService{
 				screen:         screenMock,
@@ -130,7 +115,9 @@ func TestScreenService_PollScreenEvents_Controls(t *testing.T) {
 			}
 			go screenSvc.PollScreenEvents(ctx)
 			
-			screenMock.InjectKeyBytes(tt.keyBytes)
+			for _, key := range tt.pushedKeys {
+				screenMock.InjectKey(key, ' ', tcell.ModNone)
+			}
 			select {
 			case event := <- screenSvc.controlChannel:
 				require.Equal(t, tt.expectedEvent, event)
