@@ -140,19 +140,12 @@ func (screenSvc *ScreenService) IsInsideScreen(x, y float64) bool {
 }
 
 func (screenSvc *ScreenService) Draw(obj ScreenObject) {
-	initialX, y := obj.GetCornerCoordinates()
-	view := obj.GetView()
-	x := initialX
-	for _, char := range view {
-		if char == '\n' {
-			y++
-			x = initialX
-			continue
+	coords, characters := obj.GetViewCoordinates()
+	for i, character := range characters {
+		x, y := coords[i][0], coords[i][1]
+		if !unicode.IsSpace(character) {
+			screenSvc.screen.SetContent(x, y, character, nil, obj.GetStyle())
 		}
-		if !unicode.IsSpace(char) {
-			screenSvc.screen.SetContent(x, y, char, nil, obj.GetStyle())
-		}
-		x++
 	}
 }
 

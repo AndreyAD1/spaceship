@@ -99,7 +99,7 @@ ObjectLoop:
 		select {
 		case obj := <-objectChannel:
 			interObjects = append(interObjects, obj)
-			coordinates := obj.GetViewCoordinates()
+			coordinates, _ := obj.GetViewCoordinates()
 			for _, coord_pair := range coordinates {
 				x, y := coord_pair[0], coord_pair[1]
 				if screenService.IsInsideScreen(float64(x), float64(y)) {

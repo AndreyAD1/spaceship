@@ -103,7 +103,7 @@ func TestBaseObject_GetViewCoordinates(t *testing.T) {
 				Speed:     1,
 				View:      tt.fields.View,
 			}
-			coords := baseObject.GetViewCoordinates()
+			coords, _ := baseObject.GetViewCoordinates()
 			require.Condition(
 				t,
 				func() bool { return reflect.DeepEqual(coords, tt.expected) },

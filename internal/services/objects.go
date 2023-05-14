@@ -9,7 +9,7 @@ import (
 
 type ScreenObject interface {
 	GetCornerCoordinates() (int, int)
-	GetViewCoordinates() [][]int
+	GetViewCoordinates() ([][]int, []rune)
 	GetStyle() tcell.Style
 	Unblock()
 	Deactivate()
@@ -48,11 +48,12 @@ func (baseObject *BaseObject) GetCornerCoordinates() (int, int) {
 	return int(math.Round(baseObject.X)), int(math.Round(baseObject.Y))
 }
 
-func (baseObject *BaseObject) GetViewCoordinates() [][]int {
+func (baseObject *BaseObject) GetViewCoordinates() ([][]int, []rune) {
 	initialX, y := baseObject.GetCornerCoordinates()
 	view := baseObject.GetView()
 	x := initialX
 	coordinates := [][]int{}
+	characters := []rune{}
 	for _, char := range view {
 		if char == '\n' {
 			y++
@@ -61,10 +62,11 @@ func (baseObject *BaseObject) GetViewCoordinates() [][]int {
 		}
 		if !unicode.IsSpace(char) {
 			coordinates = append(coordinates, []int{x, y})
+			characters = append(characters, char)
 		}
 		x++
 	}
-	return coordinates
+	return coordinates, characters
 }
 
 func (baseObject *BaseObject) GetStyle() tcell.Style {
