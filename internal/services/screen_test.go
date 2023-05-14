@@ -85,8 +85,8 @@ func TestScreenService_PollScreenEvents_Controls(t *testing.T) {
 	logger.SetLevel(log.DebugLevel)
 	ctx := log.WithContext(context.Background(), logger)
 	tests := []struct {
-		name     string
-		pushedKeys []tcell.Key
+		name          string
+		pushedKeys    []tcell.Key
 		expectedEvent ScreenEvent
 	}{
 		{
@@ -96,7 +96,12 @@ func TestScreenService_PollScreenEvents_Controls(t *testing.T) {
 		},
 		{
 			"several events",
-			[]tcell.Key{tcell.KeyLeft, tcell.KeyLeft, tcell.KeyRune, tcell.KeyRight},
+			[]tcell.Key{
+				tcell.KeyLeft,
+				tcell.KeyLeft,
+				tcell.KeyRune,
+				tcell.KeyRight,
+			},
 			GoRight,
 		},
 	}
@@ -106,7 +111,7 @@ func TestScreenService_PollScreenEvents_Controls(t *testing.T) {
 			defer screenMock.Fini()
 			err := screenMock.Init()
 			require.NoError(t, err)
-		
+
 			exitChannel := make(chan struct{})
 			screenSvc := &ScreenService{
 				screen:         screenMock,
@@ -114,30 +119,86 @@ func TestScreenService_PollScreenEvents_Controls(t *testing.T) {
 				controlChannel: make(chan ScreenEvent),
 			}
 			go screenSvc.PollScreenEvents(ctx)
-			
+
 			for _, key := range tt.pushedKeys {
 				screenMock.InjectKey(key, ' ', tcell.ModNone)
 			}
 			select {
-			case event := <- screenSvc.controlChannel:
+			case event := <-screenSvc.controlChannel:
 				require.Equal(t, tt.expectedEvent, event)
 			case <-time.After(10 * time.Millisecond):
 				t.Errorf("no control event")
 			}
-			
+
 			screenMock.InjectKey(tcell.KeyRune, ' ', tcell.ModNone)
 			select {
-			case event := <- screenSvc.controlChannel:
+			case event := <-screenSvc.controlChannel:
 				require.Equal(t, Shoot, event)
 			case <-time.After(10 * time.Millisecond):
 				t.Errorf("no control event")
 			}
-			
+
 			select {
 			case <-exitChannel:
 				t.Errorf("channel is unexpectedly closed")
 			case <-time.After(10 * time.Millisecond):
 			}
+		})
+	}
+}
+
+func TestScreenService_IsInsideScreen(t *testing.T) {
+	screenSize := 10
+	tests := []struct {
+		name     string
+		x        float64
+		y        float64
+		expected bool
+	}{
+		{
+			"inside a screen",
+			float64(screenSize - 2),
+			float64(screenSize - 1),
+			true,
+		},
+		{
+			"negative x",
+			float64(-1),
+			float64(screenSize - 2),
+			false,
+		},
+		{
+			"boundary x",
+			float64(screenSize - 1),
+			float64(screenSize - 2),
+			false,
+		},
+		{
+			"negative y",
+			float64(screenSize - 2),
+			float64(-1),
+			false,
+		},
+		{
+			"boundary y",
+			float64(screenSize - 2),
+			float64(screenSize),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			screenMock := tcell.NewSimulationScreen("")
+			defer screenMock.Fini()
+			err := screenMock.Init()
+			require.NoError(t, err)
+			screenMock.SetSize(screenSize, screenSize)
+			screenSvc := &ScreenService{
+				screen:         screenMock,
+				exitChannel:    make(chan struct{}),
+				controlChannel: make(chan ScreenEvent),
+			}
+			require.Equal(t, tt.expected, screenSvc.IsInsideScreen(tt.x, tt.y))
 		})
 	}
 }

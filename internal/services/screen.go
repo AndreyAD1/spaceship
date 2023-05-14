@@ -134,10 +134,9 @@ func (screenSvc *ScreenService) Finish() {
 func (screenSvc *ScreenService) IsInsideScreen(x, y float64) bool {
 	width, height := screenSvc.screen.Size()
 	roundX, roundY := int(math.Round(x)), int(math.Round(y))
-	if roundX >= width-1 || roundX < 0 || roundY >= height || roundY < 0 {
-		return false
-	}
-	return true
+	xIsOutside := roundX >= width-1 || roundX < 0
+	yIsOutside := roundY >= height || roundY < 0
+	return !(xIsOutside || yIsOutside)
 }
 
 func (screenSvc *ScreenService) Draw(obj ScreenObject) {
