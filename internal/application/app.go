@@ -92,7 +92,7 @@ func getScreenObjects(
 	objectChannel chan services.ScreenObject,
 	screenService *services.ScreenService,
 ) ([][][]services.ScreenObject, []services.ScreenObject) {
-	screenObjects := screenService.GetObjectList()
+	screenObjects := screenService.NewObjectList()
 	interObjects := []services.ScreenObject{}
 ObjectLoop:
 	for {

@@ -51,19 +51,22 @@ func TestBaseObject_GetViewCoordinates(t *testing.T) {
 		View string
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		expected [][]int
+		name           string
+		fields         fields
+		expectedCoords [][]int
+		expectedChars  []rune
 	}{
 		{
 			"shell 0-0",
 			fields{0.0, 0.0, "|"},
 			[][]int{{0, 0}},
+			[]rune{'|'},
 		},
 		{
 			"shell 3-5",
 			fields{2.8, 5.1, "|"},
 			[][]int{{3, 5}},
+			[]rune{'|'},
 		},
 		{
 			"multiline",
@@ -75,6 +78,7 @@ func TestBaseObject_GetViewCoordinates(t *testing.T) {
 `,
 			},
 			[][]int{{5, 5}, {6, 5}, {3, 6}, {4, 6}, {7, 6}},
+			[]rune{'_', '_', '|', '|', '|'},
 		},
 		{
 			"meteorite",
@@ -89,6 +93,7 @@ func TestBaseObject_GetViewCoordinates(t *testing.T) {
 				{2, 1}, {8, 1},
 				{2, 2}, {3, 2}, {4, 2}, {5, 2}, {6, 2}, {7, 2},
 			},
+			[]rune{'_', '_', '_', '/', '\\', '/', '/', '\\', '_', '_', '_', '_', '/'},
 		},
 	}
 	for _, tt := range tests {
@@ -103,13 +108,20 @@ func TestBaseObject_GetViewCoordinates(t *testing.T) {
 				Speed:     1,
 				View:      tt.fields.View,
 			}
-			coords, _ := baseObject.GetViewCoordinates()
+			coords, chars := baseObject.GetViewCoordinates()
 			require.Condition(
 				t,
-				func() bool { return reflect.DeepEqual(coords, tt.expected) },
+				func() bool { return reflect.DeepEqual(coords, tt.expectedCoords) },
 				"BaseObject.GetViewCoordinates() = %v, want %v",
 				coords,
-				tt.expected,
+				tt.expectedCoords,
+			)
+			require.Condition(
+				t,
+				func() bool { return reflect.DeepEqual(chars, tt.expectedChars) },
+				"BaseObject.GetViewCoordinates() = %v, want %v",
+				chars,
+				tt.expectedChars,
 			)
 		})
 	}

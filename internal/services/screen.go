@@ -29,7 +29,7 @@ type ScreenSvc interface {
 	Finish()
 	IsInsideScreen(x, y float64) bool
 	Draw(obj ScreenObject)
-	GetObjectList() [][][]ScreenObject
+	NewObjectList() [][][]ScreenObject
 	GetScreenSize() (int, int)
 }
 
@@ -149,7 +149,7 @@ func (screenSvc *ScreenService) Draw(obj ScreenObject) {
 	}
 }
 
-func (screenSvc *ScreenService) GetObjectList() [][][]ScreenObject {
+func (screenSvc *ScreenService) NewObjectList() [][][]ScreenObject {
 	width, height := screenSvc.screen.Size()
 	newList := make([][][]ScreenObject, height)
 	for i := 0; i < height; i++ {

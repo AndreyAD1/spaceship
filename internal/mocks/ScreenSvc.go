@@ -58,7 +58,7 @@ func (_m *ScreenSvc) GetControlEvent() services.ScreenEvent {
 }
 
 // GetObjectList provides a mock function with given fields:
-func (_m *ScreenSvc) GetObjectList() [][][]services.ScreenObject {
+func (_m *ScreenSvc) NewObjectList() [][][]services.ScreenObject {
 	ret := _m.Called()
 
 	var r0 [][][]services.ScreenObject
