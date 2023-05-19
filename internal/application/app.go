@@ -29,6 +29,7 @@ func (app Application) Run() error {
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
 
+	services.GenerateStars(starChannel, screenService)
 	go services.GenerateMeteorites(interactiveChannel, screenService)
 	services.GenerateShip(interactiveChannel, screenService, gameoverChannel)
 	go screenService.PollScreenEvents(ctx)
@@ -53,9 +54,16 @@ func (app Application) Run() error {
 	return nil
 }
 
-// this function will draw stars
-func drawStars(chan services.ScreenObject, *services.ScreenService) {
-	return
+func drawStars(starChan chan services.ScreenObject, screenSvc *services.ScreenService) {
+StarLoop:
+	for {
+		select {
+		case star := <- starChan:
+			screenSvc.Draw(star)
+		default:
+			break StarLoop
+		}
+	}
 }
 
 func processInteractiveObjects(
