@@ -55,13 +55,12 @@ func (app Application) Run() error {
 }
 
 func drawStars(starChan chan services.ScreenObject, screenSvc *services.ScreenService) {
-StarLoop:
 	for {
 		select {
 		case star := <- starChan:
 			screenSvc.Draw(star)
 		default:
-			break StarLoop
+			return
 		}
 	}
 }
@@ -102,7 +101,6 @@ func getScreenObjects(
 ) ([][][]services.ScreenObject, []services.ScreenObject) {
 	screenObjects := screenService.NewObjectList()
 	interObjects := []services.ScreenObject{}
-ObjectLoop:
 	for {
 		select {
 		case obj := <-objectChannel:
@@ -115,8 +113,7 @@ ObjectLoop:
 				}
 			}
 		default:
-			break ObjectLoop
+			return screenObjects, interObjects
 		}
 	}
-	return screenObjects, interObjects
 }
