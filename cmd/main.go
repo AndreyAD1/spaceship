@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"runtime/pprof"
 
 	"github.com/AndreyAD1/spaceship/internal/application"
 	"github.com/AndreyAD1/spaceship/internal/config"
@@ -14,6 +15,7 @@ import (
 func main() {
 	debug := flag.String("debug", "", "run in a debug mode")
 	logFile := flag.String("log_file", "", "write logs to this file")
+	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to file")
 	flag.Parse()
 	configuration := config.StartupConfig{}
 	err := env.Parse(&configuration)
@@ -26,6 +28,14 @@ func main() {
 	if *logFile != "" {
 		configuration.LogFile = *logFile
 	}
+	if *cpuprofile != "" {
+        f, err := os.Create(*cpuprofile)
+        if err != nil {
+            log.Fatal(err)
+        }
+        pprof.StartCPUProfile(f)
+        defer pprof.StopCPUProfile()
+    }
 	newLogger, err := logger.NewLogger(configuration)
 	if err != nil {
 		log.Fatal(err)

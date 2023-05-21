@@ -69,18 +69,26 @@ func NewScreenService() (*ScreenService, error) {
 
 func (screenSvc *ScreenService) PollScreenEvents(ctx context.Context) {
 	logger := log.FromContext(ctx)
-MainLoop:
+	eventIsExit := func(event tcell.Event) bool {
+		if ev, ok := event.(*tcell.EventKey); ok {
+			logger.Debugf("receive a key event %v", ev.Key())
+			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
+				screenSvc.exitChannel <- struct{}{}
+				close(screenSvc.exitChannel)
+				return true
+			}
+		}
+		return false
+	}
 	for {
-		var event tcell.Event
+		event := screenSvc.screen.PollEvent()
+		if eventIsExit(event) {
+			return
+		}
 		for screenSvc.screen.HasPendingEvent() {
 			event = screenSvc.screen.PollEvent()
-			if ev, ok := event.(*tcell.EventKey); ok {
-				logger.Debugf("receive a key event %v", ev.Key())
-				if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
-					screenSvc.exitChannel <- struct{}{}
-					close(screenSvc.exitChannel)
-					break MainLoop
-				}
+			if eventIsExit(event) {
+				return
 			}
 		}
 		if ev, ok := event.(*tcell.EventKey); ok {
