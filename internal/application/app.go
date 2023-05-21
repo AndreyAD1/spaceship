@@ -25,11 +25,11 @@ func (app Application) Run() error {
 	}
 	defer screenService.Finish()
 
-	// starChannel := make(chan services.ScreenObject)
+	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
 
-	// services.GenerateStars(starChannel, screenService)
+	services.GenerateStars(starChannel, screenService)
 	go services.GenerateMeteorites(interactiveChannel, screenService)
 	services.GenerateShip(interactiveChannel, screenService, gameoverChannel)
 	go screenService.PollScreenEvents(ctx)
@@ -39,7 +39,7 @@ func (app Application) Run() error {
 		if screenService.Exit() {
 			break
 		}
-		// drawStars(starChannel, screenService)
+		drawStars(starChannel, screenService)
 		processInteractiveObjects(interactiveChannel, screenService)
 		select {
 		case gameover := <-gameoverChannel:
@@ -55,11 +55,16 @@ func (app Application) Run() error {
 }
 
 func drawStars(starChan chan services.ScreenObject, screenSvc *services.ScreenService) {
+	stars := []services.ScreenObject{}
 	for {
 		select {
 		case star := <- starChan:
 			screenSvc.Draw(star)
+			stars = append(stars, star)
 		default:
+			for _, star := range stars {
+				star.Unblock()
+			}
 			return
 		}
 	}

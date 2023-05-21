@@ -49,6 +49,10 @@ func (star *Star) Blink() {
 	ticker := time.NewTicker(tickOffset * time.Millisecond)
 	tickPhase := 0
 	for {
+		if star.IsBlocked {
+			continue
+		}
+		star.IsBlocked = true
 		star.StarChan <- star
 		select {
 		case <-ticker.C:
