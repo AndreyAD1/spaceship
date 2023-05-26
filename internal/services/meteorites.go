@@ -29,6 +29,8 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 			meteoriteStyle,
 			0.02,
 			MeteoriteView,
+			make(chan(struct{})),
+			make(chan(struct{})),
 		}
 		meteorite := Meteorite{baseObject, events, screenSvc}
 		go meteorite.Move()
@@ -43,21 +45,20 @@ type Meteorite struct {
 
 func (meteorite *Meteorite) Move() {
 	for {
-		if meteorite.Active != true {
-			break
-		}
-		if meteorite.IsBlocked {
-			continue
-		}
 		newY := meteorite.Y + meteorite.Speed
 		_, height := meteorite.ScreenSvc.GetScreenSize()
 		if newY > float64(height)+2 {
-			meteorite.Deactivate()
+			meteorite.Active = false
 			break
 		}
 		meteorite.Y = newY
-		meteorite.IsBlocked = true
 		meteorite.Objects <- meteorite
+		
+		select {
+		case <-meteorite.Cancel:
+			return
+		case <-meteorite.UnblockCh:
+		}
 	}
 }
 

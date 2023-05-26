@@ -22,6 +22,8 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		speed,
 		services.MeteoriteView,
+		make(chan struct{}),
+		make(chan struct{}),
 	}
 	MockedScreenSvc := mocks.NewScreenSvc(t)
 	MockedScreenSvc.On("GetScreenSize").Return(100, 100)
@@ -50,7 +52,7 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 	case <-time.After(100 * time.Millisecond):
 	}
 
-	meteorite.IsBlocked = false
+	meteorite.Unblock()
 
 	select {
 	case receivedMeteorite := <-objectChannel:
@@ -64,7 +66,7 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 	expectedY += meteorite.Speed
 	require.Equal(t, expectedY, meteorite.Y)
 
-	meteorite.Active = false
+	meteorite.Deactivate()
 	select {
 	case <-objectChannel:
 		t.Errorf("a deactivated meteorite appears in the channel")
@@ -84,6 +86,8 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		speed,
 		services.MeteoriteView,
+		make(chan struct{}),
+		make(chan struct{}),
 	}
 	MockedScreenSvc := mocks.NewScreenSvc(t)
 	MockedScreenSvc.On("GetScreenSize").Return(1, 1)
@@ -99,7 +103,7 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 	case <-time.After(100 * time.Millisecond):
 	}
 
-	meteorite.IsBlocked = false
+	meteorite.Unblock()
 
 	select {
 	case receivedMeteorite := <-objectChannel:
@@ -121,6 +125,8 @@ func TestMeteorite_Collide(t *testing.T) {
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		1,
 		services.MeteoriteView,
+		make(chan struct{}),
+		make(chan struct{}),
 	}
 	objectChannel := make(chan<- services.ScreenObject)
 	screenMock := mocks.NewScreenSvc(t)
@@ -151,7 +157,7 @@ func TestMeteorite_Collide(t *testing.T) {
 			true,
 		},
 		{
-			"collide the other object",
+			"collide with the other object",
 			[]services.ScreenObject{
 				&services.Meteorite{
 					BaseObject: baseObject,

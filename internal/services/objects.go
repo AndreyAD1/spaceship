@@ -29,10 +29,13 @@ type BaseObject struct {
 	Style     tcell.Style
 	Speed     float64 // Cells per iteration. Max speed = 1
 	View      string
+	Cancel    chan(struct{})
+	UnblockCh chan(struct{})
 }
 
 func (baseObject *BaseObject) Deactivate() {
 	baseObject.Active = false
+	baseObject.Cancel <- struct{}{}
 }
 
 func (baseObject *BaseObject) IsActive() bool {
@@ -40,8 +43,8 @@ func (baseObject *BaseObject) IsActive() bool {
 }
 
 func (baseObject *BaseObject) Unblock() {
-	baseObject.IsBlocked = false
 	baseObject.IsDrawn = false
+	baseObject.UnblockCh <- struct{}{}
 }
 
 func (baseObject *BaseObject) GetCornerCoordinates() (int, int) {

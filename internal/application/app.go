@@ -96,7 +96,9 @@ func processInteractiveObjects(
 	}
 
 	for _, object := range interObjects {
-		object.Unblock()
+		if object.IsActive() {
+			object.Unblock()
+		}
 	}
 }
 

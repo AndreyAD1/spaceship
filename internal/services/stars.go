@@ -32,6 +32,8 @@ func GenerateStars(starsChan chan ScreenObject, screenSvc *ScreenService) {
 			style,
 			0,
 			"*",
+			make(chan(struct{})),
+			make(chan(struct{})),
 		}
 		star := Star{baseObject, starsChan}
 		go star.Blink()
@@ -49,10 +51,6 @@ func (star *Star) Blink() {
 	ticker := time.NewTicker(tickOffset * time.Millisecond)
 	tickPhase := 0
 	for {
-		if star.IsBlocked {
-			continue
-		}
-		star.IsBlocked = true
 		star.StarChan <- star
 		select {
 		case <-ticker.C:
@@ -72,5 +70,6 @@ func (star *Star) Blink() {
 			}
 		default:
 		}
+		<-star.UnblockCh
 	}
 }

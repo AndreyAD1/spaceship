@@ -12,6 +12,8 @@ func Shot(screenSvc *ScreenService, objects chan<- ScreenObject, x, y float64) {
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		0.1,
 		"|",
+		make(chan struct{}),
+		make(chan struct{}),
 	}
 	shot := Shell{baseObject, objects, screenSvc}
 	go shot.Move()
@@ -25,20 +27,19 @@ type Shell struct {
 
 func (shell *Shell) Move() {
 	for {
-		if shell.Active != true {
-			break
-		}
-		if shell.IsBlocked {
-			continue
-		}
 		newY := shell.Y - shell.Speed
 		if !shell.ScreenSvc.IsInsideScreen(shell.X, newY) {
-			shell.Deactivate()
+			shell.Active = false
 			break
 		}
 		shell.Y = newY
 		shell.IsBlocked = true
 		shell.Objects <- shell
+		select {
+		case <-shell.Cancel:
+			return
+		case <-shell.UnblockCh:
+		}
 	}
 }
 

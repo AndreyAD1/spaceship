@@ -24,6 +24,8 @@ func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		0.01,
 		label,
+		make(chan struct{}),
+		make(chan struct{}),
 	}
 	for {
 		channel <- &gameover

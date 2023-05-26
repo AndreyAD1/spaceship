@@ -24,6 +24,8 @@ func GenerateShip(
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		1,
 		SpaceshipView,
+		make(chan struct{}),
+		make(chan struct{}),
 	}
 	spaceship := Spaceship{baseObject, objects, screenSvc, gameover}
 	go spaceship.Move()
@@ -39,12 +41,6 @@ type Spaceship struct {
 
 func (spaceship *Spaceship) Move() {
 	for {
-		if !spaceship.Active {
-			break
-		}
-		if spaceship.IsBlocked {
-			continue
-		}
 		newX := spaceship.X
 		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
@@ -59,8 +55,13 @@ func (spaceship *Spaceship) Move() {
 		if leftBoundaryIsValid && rightBoundaryIsValid {
 			spaceship.X = newX
 		}
-		spaceship.IsBlocked = true
 		spaceship.Objects <- spaceship
+		
+		select {
+		case <-spaceship.Cancel:
+			go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
+			return
+		case <-spaceship.UnblockCh:
+		}
 	}
-	go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 }
