@@ -35,7 +35,7 @@ type BaseObject struct {
 
 func (baseObject *BaseObject) Deactivate() {
 	baseObject.Active = false
-	baseObject.Cancel <- struct{}{}
+	close(baseObject.Cancel)
 }
 
 func (baseObject *BaseObject) IsActive() bool {
