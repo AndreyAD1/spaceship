@@ -151,7 +151,7 @@ func (screenSvc *ScreenService) Draw(obj ScreenObject) {
 	coords, characters := obj.GetViewCoordinates()
 	for i, character := range characters {
 		x, y := coords[i][0], coords[i][1]
-		if !unicode.IsSpace(character) {
+		if character == 0x85 || !unicode.IsSpace(character) {
 			screenSvc.screen.SetContent(x, y, character, nil, obj.GetStyle())
 		}
 	}

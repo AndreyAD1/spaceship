@@ -12,6 +12,12 @@ const MeteoriteView = `  ___
 /     /
 \____/`
 
+var MeteoriteRuneView []rune = []rune{
+	' ', ' ', '_', '_', '_', '\n', ' ', '/', 0x85, 0x85, 0x85, '\\', '\n',
+	'/', 0x85, 0x85, 0x85, 0x85, 0x85, '/', '\n',
+	'\\', '_', '_', '_', '_', '/',
+}
+
 func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
@@ -27,9 +33,9 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 			-6,
 			meteoriteStyle,
 			0.02,
-			MeteoriteView,
-			make(chan(struct{})),
-			make(chan(struct{})),
+			string(MeteoriteRuneView),
+			make(chan (struct{})),
+			make(chan (struct{})),
 		}
 		meteorite := Meteorite{baseObject, events, screenSvc}
 		go meteorite.Move()
@@ -52,7 +58,7 @@ func (meteorite *Meteorite) Move() {
 		}
 		meteorite.Y = newY
 		meteorite.Objects <- meteorite
-		
+
 		select {
 		case <-meteorite.Cancel:
 			meteorite.Active = false

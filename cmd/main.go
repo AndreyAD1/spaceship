@@ -29,13 +29,13 @@ func main() {
 		configuration.LogFile = *logFile
 	}
 	if *cpuprofile != "" {
-        f, err := os.Create(*cpuprofile)
-        if err != nil {
-            log.Fatal(err)
-        }
-        pprof.StartCPUProfile(f)
-        defer pprof.StopCPUProfile()
-    }
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 	newLogger, err := logger.NewLogger(configuration)
 	if err != nil {
 		log.Fatal(err)

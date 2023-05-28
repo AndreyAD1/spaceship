@@ -28,8 +28,8 @@ type BaseObject struct {
 	Style     tcell.Style
 	Speed     float64 // Cells per iteration. Max speed = 1
 	View      string
-	Cancel    chan(struct{})
-	UnblockCh chan(struct{})
+	Cancel    chan (struct{})
+	UnblockCh chan (struct{})
 }
 
 func (baseObject *BaseObject) Deactivate() {
@@ -62,7 +62,7 @@ func (baseObject *BaseObject) GetViewCoordinates() ([][]int, []rune) {
 			x = initialX
 			continue
 		}
-		if !unicode.IsSpace(char) {
+		if char == 0x85 || !unicode.IsSpace(char) {
 			coordinates = append(coordinates, []int{x, y})
 			characters = append(characters, char)
 		}

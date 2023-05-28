@@ -58,7 +58,7 @@ func drawStars(starChan chan services.ScreenObject, screenSvc *services.ScreenSe
 	stars := []services.ScreenObject{}
 	for {
 		select {
-		case star := <- starChan:
+		case star := <-starChan:
 			screenSvc.Draw(star)
 			stars = append(stars, star)
 		default:

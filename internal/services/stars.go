@@ -14,7 +14,7 @@ func GenerateStars(starsChan chan ScreenObject, screenSvc *ScreenService) {
 	for i := range usedCoords {
 		usedCoords[i] = make([]bool, width)
 	}
-	for i := 0; i < screenSquare / 15; i++ {
+	for i := 0; i < screenSquare/15; i++ {
 		var starLine, starColumn int
 		for {
 			starLine, starColumn = rand.Intn(height), rand.Intn(width)
@@ -31,8 +31,8 @@ func GenerateStars(starsChan chan ScreenObject, screenSvc *ScreenService) {
 			style,
 			0,
 			"*",
-			make(chan(struct{})),
-			make(chan(struct{})),
+			make(chan (struct{})),
+			make(chan (struct{})),
 		}
 		star := Star{baseObject, starsChan}
 		go star.Blink()
@@ -42,7 +42,7 @@ func GenerateStars(starsChan chan ScreenObject, screenSvc *ScreenService) {
 
 type Star struct {
 	BaseObject
-	StarChan   chan<- ScreenObject
+	StarChan chan<- ScreenObject
 }
 
 func (star *Star) Blink() {
@@ -54,7 +54,7 @@ func (star *Star) Blink() {
 		select {
 		case <-ticker.C:
 			switch tickPhase {
-			case 0: 
+			case 0:
 				star.Style = star.Style.Bold(true)
 			case 1:
 				star.Style = star.Style.Normal()

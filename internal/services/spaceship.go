@@ -55,7 +55,7 @@ func (spaceship *Spaceship) Move() {
 			spaceship.X = newX
 		}
 		spaceship.Objects <- spaceship
-		
+
 		select {
 		case <-spaceship.Cancel:
 			spaceship.Active = false
