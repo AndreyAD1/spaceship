@@ -17,7 +17,6 @@ func GenerateShip(
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
 		false,
-		false,
 		true,
 		float64(width) / 2,
 		float64(height) - 6,
@@ -59,6 +58,7 @@ func (spaceship *Spaceship) Move() {
 		
 		select {
 		case <-spaceship.Cancel:
+			spaceship.Active = false
 			go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 			return
 		case <-spaceship.UnblockCh:

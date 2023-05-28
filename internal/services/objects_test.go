@@ -28,7 +28,6 @@ func TestBaseObject_GetCornerCoordinates(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			baseObject := &services.BaseObject{
-				IsBlocked: false,
 				IsDrawn:   false,
 				Active:    true,
 				X:         tt.fields.X,
@@ -99,7 +98,6 @@ func TestBaseObject_GetViewCoordinates(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			baseObject := &services.BaseObject{
-				IsBlocked: false,
 				IsDrawn:   false,
 				Active:    true,
 				X:         tt.fields.X,

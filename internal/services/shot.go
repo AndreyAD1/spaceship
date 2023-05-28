@@ -5,7 +5,6 @@ import "github.com/gdamore/tcell/v2"
 func Shot(screenSvc *ScreenService, objects chan<- ScreenObject, x, y float64) {
 	baseObject := BaseObject{
 		false,
-		false,
 		true,
 		x,
 		y,
@@ -33,10 +32,10 @@ func (shell *Shell) Move() {
 			break
 		}
 		shell.Y = newY
-		shell.IsBlocked = true
 		shell.Objects <- shell
 		select {
 		case <-shell.Cancel:
+			shell.Active = false
 			return
 		case <-shell.UnblockCh:
 		}

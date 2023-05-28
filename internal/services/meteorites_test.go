@@ -15,7 +15,6 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 	initialY, speed := float64(0), float64(1)
 	baseObject := services.BaseObject{
 		false,
-		false,
 		true,
 		0,
 		initialY,
@@ -41,7 +40,6 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 		t.Errorf("no meteorites in the object channel")
 	}
 	MockedScreenSvc.AssertNumberOfCalls(t, "GetScreenSize", 1)
-	require.True(t, meteorite.IsBlocked)
 	require.True(t, meteorite.Active)
 	expectedY := initialY + meteorite.Speed
 	require.Equal(t, expectedY, meteorite.Y)
@@ -61,7 +59,6 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 		t.Errorf("no meteorites in the object channel")
 	}
 	MockedScreenSvc.AssertNumberOfCalls(t, "GetScreenSize", 2)
-	require.True(t, meteorite.IsBlocked)
 	require.True(t, meteorite.Active)
 	expectedY += meteorite.Speed
 	require.Equal(t, expectedY, meteorite.Y)
@@ -72,13 +69,13 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 		t.Errorf("a deactivated meteorite appears in the channel")
 	case <-time.After(100 * time.Millisecond):
 	}
+	require.False(t, meteorite.Active)
 }
 
 func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 	objectChannel := make(chan services.ScreenObject)
 	initialY, speed := float64(2), float64(1)
 	baseObject := services.BaseObject{
-		false,
 		false,
 		true,
 		0,
@@ -117,7 +114,6 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 
 func TestMeteorite_Collide(t *testing.T) {
 	baseObject := services.BaseObject{
-		false,
 		false,
 		true,
 		0,

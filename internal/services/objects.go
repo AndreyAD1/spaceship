@@ -21,7 +21,6 @@ type ScreenObject interface {
 }
 
 type BaseObject struct {
-	IsBlocked bool
 	IsDrawn   bool
 	Active    bool
 	X         float64 // a column of left upper corner
