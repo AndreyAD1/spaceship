@@ -31,5 +31,5 @@ jobs:
     - name: Upload an artifact
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: executable-file 
+        name: spaceship-game 
         path: ./spaceship.exe
