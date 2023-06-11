@@ -13,9 +13,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         include:
-          - artifact_name: linux
+          - executable_name: spaceship-linux.exe
             os: ubuntu-latest
-          - artifact_name: windows
+          - executable_name: spaceship-windows.exe
             os: windows-latest
 
     runs-on: ${{ matrix.os }}
@@ -35,10 +35,10 @@ jobs:
       run: go test -v ./...
     
     - name: Build
-      run: go build -o spaceship.exe -v ./cmd/main.go
+      run: go build -o ${{ matrix.executable_name }} -v ./cmd/main.go
     
     - name: Upload an artifact
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: spaceship-game-${{ matrix.artifact_name }}
-        path: ./spaceship-${{ matrix.artifact_name }}.exe
+        name: spaceship-game-${{ matrix.os}}
+        path: ./${{ matrix.executable_name }}
