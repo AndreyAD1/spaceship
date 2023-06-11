@@ -34,5 +34,5 @@ jobs:
     - name: Upload an artifact
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: spaceship-game 
+        name: spaceship-game-${{ matrix.os }}
         path: ./spaceship.exe
