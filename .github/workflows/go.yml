@@ -12,6 +12,12 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        include:
+          - artifact_name: linux
+            os: ubuntu-latest
+          - artifact_name: windows
+            os: windows-latest
+
     runs-on: ${{ matrix.os }}
     steps:
         
@@ -34,5 +40,5 @@ jobs:
     - name: Upload an artifact
       uses: actions/upload-artifact@v3.1.2
       with:
-        name: spaceship-game-${{ matrix.os }}
-        path: ./spaceship.exe
+        name: spaceship-game-${{ matrix.artifact_name }}
+        path: ./spaceship-${{ matrix.artifact_name }}.exe
