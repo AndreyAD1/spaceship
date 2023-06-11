@@ -41,18 +41,28 @@ type Spaceship struct {
 func (spaceship *Spaceship) Move() {
 	for {
 		newX := spaceship.X
+		newY := spaceship.Y
 		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
 			newX = spaceship.X - spaceship.Speed
 		case GoRight:
 			newX = spaceship.X + spaceship.Speed
+		case GoUp:
+			newY = spaceship.Y - spaceship.Speed
+		case GoDown:
+			newY = spaceship.Y + spaceship.Speed
 		case Shoot:
 			go Shot(spaceship.ScreenSvc, spaceship.Objects, spaceship.X+2, spaceship.Y-1)
 		}
 		leftBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(newX, spaceship.Y)
 		rightBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(newX+3, spaceship.Y)
+		upperBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(spaceship.X, newY)
+		lowerBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(spaceship.X, newY+5)
 		if leftBoundaryIsValid && rightBoundaryIsValid {
 			spaceship.X = newX
+		}
+		if upperBoundaryIsValid && lowerBoundaryIsValid {
+			spaceship.Y = newY
 		}
 		spaceship.Objects <- spaceship
 

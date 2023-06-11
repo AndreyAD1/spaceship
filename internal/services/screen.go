@@ -17,6 +17,8 @@ const (
 	Exit
 	GoLeft
 	GoRight
+	GoUp
+	GoDown
 	Shoot
 )
 
@@ -99,6 +101,10 @@ func (screenSvc *ScreenService) PollScreenEvents(ctx context.Context) {
 				screenSvc.controlChannel <- GoLeft
 			case tcell.KeyRight:
 				screenSvc.controlChannel <- GoRight
+			case tcell.KeyUp:
+				screenSvc.controlChannel <- GoUp
+			case tcell.KeyDown:
+				screenSvc.controlChannel <- GoDown
 			case tcell.KeyRune:
 				logger.Debugf("key \"%c\" is pressed", ev.Rune())
 				if ev.Rune() == ' ' {
