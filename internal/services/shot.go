@@ -26,7 +26,7 @@ type Shell struct {
 
 func (shell *Shell) Move() {
 	for {
-		newY := shell.Y - shell.Speed
+		newY := shell.Y - shell.MaxSpeed
 		if !shell.ScreenSvc.IsInsideScreen(shell.X, newY) {
 			shell.Active = false
 			break

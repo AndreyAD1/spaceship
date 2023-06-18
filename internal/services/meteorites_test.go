@@ -41,7 +41,7 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 	}
 	MockedScreenSvc.AssertNumberOfCalls(t, "GetScreenSize", 1)
 	require.True(t, meteorite.Active)
-	expectedY := initialY + meteorite.Speed
+	expectedY := initialY + meteorite.MaxSpeed
 	require.Equal(t, expectedY, meteorite.Y)
 
 	select {
@@ -60,7 +60,7 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 	}
 	MockedScreenSvc.AssertNumberOfCalls(t, "GetScreenSize", 2)
 	require.True(t, meteorite.Active)
-	expectedY += meteorite.Speed
+	expectedY += meteorite.MaxSpeed
 	require.Equal(t, expectedY, meteorite.Y)
 
 	meteorite.Deactivate()

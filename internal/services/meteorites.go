@@ -13,7 +13,7 @@ const MeteoriteView = `  ___
 \____/`
 
 var MeteoriteRuneView []rune = []rune{
-	' ', ' ', '_', '_', '_', '\n', 
+	' ', ' ', '_', '_', '_', '\n',
 	' ', '/', 0x85, 0x85, 0x85, '\\', '\n',
 	'/', 0x85, 0x85, 0x85, 0x85, 0x85, '/', '\n',
 	'\\', '_', '_', '_', '_', '/',
@@ -51,7 +51,7 @@ type Meteorite struct {
 
 func (meteorite *Meteorite) Move() {
 	for {
-		newY := meteorite.Y + meteorite.Speed
+		newY := meteorite.Y + meteorite.MaxSpeed
 		_, height := meteorite.ScreenSvc.GetScreenSize()
 		if newY > float64(height)+2 {
 			meteorite.Active = false
