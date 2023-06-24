@@ -1,6 +1,10 @@
 package services
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"math"
+
+	"github.com/gdamore/tcell/v2"
+)
 
 const SpaceshipView = `  . 
  .'.
@@ -21,12 +25,12 @@ func GenerateShip(
 		float64(width) / 2,
 		float64(height) - 6,
 		tcell.StyleDefault.Background(tcell.ColorReset),
-		1,
+		0.3,
 		SpaceshipView,
 		make(chan struct{}),
 		make(chan struct{}),
 	}
-	spaceship := Spaceship{baseObject, objects, screenSvc, gameover}
+	spaceship := Spaceship{baseObject, objects, screenSvc, gameover, 0, 0}
 	go spaceship.Move()
 	return spaceship
 }
@@ -36,33 +40,62 @@ type Spaceship struct {
 	Objects   chan<- ScreenObject
 	ScreenSvc *ScreenService
 	gameover  chan *BaseObject
+	Vx        float64
+	Vy        float64
+}
+
+func (spaceship *Spaceship) getNewSpeed(
+	velocity,
+	acceleration,
+	frictionCoef float64,
+) float64 {
+	speedRate := velocity / spaceship.MaxSpeed
+	accelerationRate := math.Cos(speedRate) * 0.75
+	newSpeed := velocity + acceleration*accelerationRate
+	return newSpeed * frictionCoef
+}
+
+func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
+	spaceship.Vx = spaceship.getNewSpeed(spaceship.Vx, ax, 0.9)
+	spaceship.Vy = spaceship.getNewSpeed(spaceship.Vy, ay, 0.9)
+	newX := spaceship.X + spaceship.Vx
+	newY := spaceship.Y + spaceship.Vy
+	leftBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(newX, spaceship.Y)
+	rightBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(newX+3, spaceship.Y)
+	if !leftBoundaryIsOk || !rightBoundaryIsOk {
+		spaceship.Vx = 0
+		newX = spaceship.X
+	}
+	upperBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(spaceship.X, newY)
+	lowerBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(spaceship.X, newY+5)
+	if !upperBoundaryIsOk || !lowerBoundaryIsOk {
+		spaceship.Vy = 0
+		newY = spaceship.Y
+	}
+	spaceship.X = newX
+	spaceship.Y = newY
 }
 
 func (spaceship *Spaceship) Move() {
 	for {
-		newX := spaceship.X
-		newY := spaceship.Y
 		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
-			newX = spaceship.X - spaceship.Speed
+			spaceship.apply_acceleration(-0.8, 0)
 		case GoRight:
-			newX = spaceship.X + spaceship.Speed
+			spaceship.apply_acceleration(0.8, 0)
 		case GoUp:
-			newY = spaceship.Y - spaceship.Speed
+			spaceship.apply_acceleration(0, -0.3)
 		case GoDown:
-			newY = spaceship.Y + spaceship.Speed
+			spaceship.apply_acceleration(0, 0.3)
 		case Shoot:
-			go Shot(spaceship.ScreenSvc, spaceship.Objects, spaceship.X+2, spaceship.Y-1)
-		}
-		leftBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(newX, spaceship.Y)
-		rightBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(newX+3, spaceship.Y)
-		upperBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(spaceship.X, newY)
-		lowerBoundaryIsValid := spaceship.ScreenSvc.IsInsideScreen(spaceship.X, newY+5)
-		if leftBoundaryIsValid && rightBoundaryIsValid {
-			spaceship.X = newX
-		}
-		if upperBoundaryIsValid && lowerBoundaryIsValid {
-			spaceship.Y = newY
+			go Shot(
+				spaceship.ScreenSvc,
+				spaceship.Objects,
+				spaceship.X+2,
+				spaceship.Y-1,
+			)
+		case NoEvent:
+			spaceship.apply_acceleration(0, 0)
 		}
 		spaceship.Objects <- spaceship
 

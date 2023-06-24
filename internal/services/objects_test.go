@@ -28,13 +28,13 @@ func TestBaseObject_GetCornerCoordinates(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			baseObject := &services.BaseObject{
-				IsDrawn: false,
-				Active:  true,
-				X:       tt.fields.X,
-				Y:       tt.fields.Y,
-				Style:   tcell.StyleDefault.Background(tcell.ColorReset),
-				Speed:   1,
-				View:    "A",
+				IsDrawn:  false,
+				Active:   true,
+				X:        tt.fields.X,
+				Y:        tt.fields.Y,
+				Style:    tcell.StyleDefault.Background(tcell.ColorReset),
+				MaxSpeed: 1,
+				View:     "A",
 			}
 			x, y := baseObject.GetCornerCoordinates()
 			require.Equal(t, tt.expectedX, x)
@@ -98,13 +98,13 @@ func TestBaseObject_GetViewCoordinates(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			baseObject := &services.BaseObject{
-				IsDrawn: false,
-				Active:  true,
-				X:       tt.fields.X,
-				Y:       tt.fields.Y,
-				Style:   tcell.StyleDefault.Background(tcell.ColorReset),
-				Speed:   1,
-				View:    tt.fields.View,
+				IsDrawn:  false,
+				Active:   true,
+				X:        tt.fields.X,
+				Y:        tt.fields.Y,
+				Style:    tcell.StyleDefault.Background(tcell.ColorReset),
+				MaxSpeed: 1,
+				View:     tt.fields.View,
 			}
 			coords, chars := baseObject.GetViewCoordinates()
 			require.Condition(

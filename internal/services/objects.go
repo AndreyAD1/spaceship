@@ -26,7 +26,7 @@ type BaseObject struct {
 	X         float64 // a column of left upper corner
 	Y         float64 // a row of left upper corner
 	Style     tcell.Style
-	Speed     float64 // Cells per iteration. Max speed = 1
+	MaxSpeed  float64 // Cells per iteration. Max speed = 1
 	View      string
 	Cancel    chan (struct{})
 	UnblockCh chan (struct{})
