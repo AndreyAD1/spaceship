@@ -6,12 +6,21 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const SpaceshipView = `  . 
+const (
+	SpaceshipView = `  . 
  .'.
  |o|
 .'o'.
 |.-.|
 '   '`
+frictionCoefficient = 0.9
+accelerationCoefficient = 0.75
+shipHeight = 6
+shipWidth = 5
+maxSpeed = 0.3
+verticalAcceleration=0.3
+horizontalAcceleration=0.8
+)
 
 func GenerateShip(
 	objects chan ScreenObject,
@@ -23,9 +32,9 @@ func GenerateShip(
 		false,
 		true,
 		float64(width) / 2,
-		float64(height) - 6,
+		float64(height) - shipHeight,
 		tcell.StyleDefault.Background(tcell.ColorReset),
-		0.3,
+		maxSpeed,
 		SpaceshipView,
 		make(chan struct{}),
 		make(chan struct{}),
@@ -50,24 +59,30 @@ func (spaceship *Spaceship) getNewSpeed(
 	frictionCoef float64,
 ) float64 {
 	speedRate := velocity / spaceship.MaxSpeed
-	accelerationRate := math.Cos(speedRate) * 0.75
+	accelerationRate := math.Cos(speedRate) * accelerationCoefficient
 	newSpeed := velocity + acceleration*accelerationRate
 	return newSpeed * frictionCoef
 }
 
 func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
-	spaceship.Vx = spaceship.getNewSpeed(spaceship.Vx, ax, 0.9)
-	spaceship.Vy = spaceship.getNewSpeed(spaceship.Vy, ay, 0.9)
+	spaceship.Vx = spaceship.getNewSpeed(spaceship.Vx, ax, frictionCoefficient)
+	spaceship.Vy = spaceship.getNewSpeed(spaceship.Vy, ay, frictionCoefficient)
 	newX := spaceship.X + spaceship.Vx
 	newY := spaceship.Y + spaceship.Vy
 	leftBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(newX, spaceship.Y)
-	rightBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(newX+3, spaceship.Y)
+	rightBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(
+		newX+shipWidth-2, 
+		spaceship.Y,
+	)
 	if !leftBoundaryIsOk || !rightBoundaryIsOk {
 		spaceship.Vx = 0
 		newX = spaceship.X
 	}
 	upperBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(spaceship.X, newY)
-	lowerBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(spaceship.X, newY+5)
+	lowerBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(
+		spaceship.X, 
+		newY+shipHeight-1,
+	)
 	if !upperBoundaryIsOk || !lowerBoundaryIsOk {
 		spaceship.Vy = 0
 		newY = spaceship.Y
@@ -80,13 +95,13 @@ func (spaceship *Spaceship) Move() {
 	for {
 		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
-			spaceship.apply_acceleration(-0.8, 0)
+			spaceship.apply_acceleration(-horizontalAcceleration, 0)
 		case GoRight:
-			spaceship.apply_acceleration(0.8, 0)
+			spaceship.apply_acceleration(horizontalAcceleration, 0)
 		case GoUp:
-			spaceship.apply_acceleration(0, -0.3)
+			spaceship.apply_acceleration(0, -verticalAcceleration)
 		case GoDown:
-			spaceship.apply_acceleration(0, 0.3)
+			spaceship.apply_acceleration(0, verticalAcceleration)
 		case Shoot:
 			go Shot(
 				spaceship.ScreenSvc,
