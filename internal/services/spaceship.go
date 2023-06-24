@@ -25,7 +25,7 @@ func GenerateShip(
 		float64(width) / 2,
 		float64(height) - 6,
 		tcell.StyleDefault.Background(tcell.ColorReset),
-		0.9,
+		0.3,
 		SpaceshipView,
 		make(chan struct{}),
 		make(chan struct{}),
@@ -57,7 +57,7 @@ func (spaceship *Spaceship) getNewSpeed(
 
 func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
 	spaceship.Vx = spaceship.getNewSpeed(spaceship.Vx, ax, 0.9)
-	spaceship.Vy = spaceship.getNewSpeed(spaceship.Vy, ay, 0.95)
+	spaceship.Vy = spaceship.getNewSpeed(spaceship.Vy, ay, 0.9)
 	newX := spaceship.X + spaceship.Vx
 	newY := spaceship.Y + spaceship.Vy
 	leftBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(newX, spaceship.Y)
@@ -84,9 +84,9 @@ func (spaceship *Spaceship) Move() {
 		case GoRight:
 			spaceship.apply_acceleration(0.8, 0)
 		case GoUp:
-			spaceship.apply_acceleration(0, -0.1)
+			spaceship.apply_acceleration(0, -0.3)
 		case GoDown:
-			spaceship.apply_acceleration(0, 0.1)
+			spaceship.apply_acceleration(0, 0.3)
 		case Shoot:
 			go Shot(
 				spaceship.ScreenSvc,

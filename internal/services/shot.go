@@ -9,7 +9,7 @@ func Shot(screenSvc *ScreenService, objects chan<- ScreenObject, x, y float64) {
 		x,
 		y,
 		tcell.StyleDefault.Background(tcell.ColorReset),
-		0.1,
+		0.5,
 		"|",
 		make(chan struct{}),
 		make(chan struct{}),
