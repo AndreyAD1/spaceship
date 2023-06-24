@@ -137,7 +137,7 @@ func (spaceship *Spaceship) Move() {
 func (spaceship *Spaceship) Collide(objects []ScreenObject) {
 	spaceship.lifes--
 	spaceship.lifeChannel <- spaceship.lifes
-	if spaceship.lifes == 0 {
+	if spaceship.lifes <= 0 && spaceship.Active {
 		spaceship.Deactivate()
 		go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 	}

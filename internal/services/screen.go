@@ -64,7 +64,7 @@ func NewScreenService() (*ScreenService, error) {
 		screen,
 		make(chan struct{}),
 		// a channel buffer allows a user to exit in a gameover state
-		make(chan ScreenEvent, 15),
+		make(chan ScreenEvent, 20),
 	}
 	return &newSvc, nil
 }
