@@ -34,7 +34,7 @@ func (app Application) Run() error {
 	services.GenerateStars(starChannel, screenService)
 	go services.GenerateMeteorites(interactiveChannel, screenService)
 	services.GenerateShip(
-		interactiveChannel, 
+		interactiveChannel,
 		screenService,
 		gameoverChannel,
 		lifeChannel,
@@ -66,7 +66,6 @@ func drawMenus(menuChan chan services.ScreenObject, screenSvc *services.ScreenSe
 	select {
 	case menu := <-menuChan:
 		screenSvc.Draw(menu)
-	default:
 	}
 }
 
