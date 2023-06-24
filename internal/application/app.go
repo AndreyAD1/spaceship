@@ -25,13 +25,20 @@ func (app Application) Run() error {
 	}
 	defer screenService.Finish()
 
+	menuChannel := make(chan services.ScreenObject)
 	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
 
+	lifeChannel := services.GenerateMenu(menuChannel, screenService)
 	services.GenerateStars(starChannel, screenService)
 	go services.GenerateMeteorites(interactiveChannel, screenService)
-	services.GenerateShip(interactiveChannel, screenService, gameoverChannel)
+	services.GenerateShip(
+		interactiveChannel, 
+		screenService,
+		gameoverChannel,
+		lifeChannel,
+	)
 	go screenService.PollScreenEvents(ctx)
 
 	app.Logger.Debug("start an event loop")
@@ -46,12 +53,21 @@ func (app Application) Run() error {
 			screenService.Draw(gameover)
 		default:
 		}
+		drawMenus(menuChannel, screenService)
 		screenService.ShowScreen()
 		time.Sleep(app.FrameTimeout)
 		screenService.ClearScreen()
 	}
 	app.Logger.Debug("finish the event loop")
 	return nil
+}
+
+func drawMenus(menuChan chan services.ScreenObject, screenSvc *services.ScreenService) {
+	select {
+	case menu := <-menuChan:
+		screenSvc.Draw(menu)
+	default:
+	}
 }
 
 func drawStars(starChan chan services.ScreenObject, screenSvc *services.ScreenService) {

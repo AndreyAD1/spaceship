@@ -26,6 +26,7 @@ func GenerateShip(
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
 	gameover chan *BaseObject,
+	lifeChannel chan<- int,
 ) Spaceship {
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
@@ -39,7 +40,16 @@ func GenerateShip(
 		make(chan struct{}),
 		make(chan struct{}),
 	}
-	spaceship := Spaceship{baseObject, objects, screenSvc, gameover, 0, 0}
+	spaceship := Spaceship{
+		baseObject, 
+		objects, 
+		screenSvc, 
+		gameover, 
+		0, 
+		0, 
+		3,
+		lifeChannel,
+	}
 	go spaceship.Move()
 	return spaceship
 }
@@ -51,6 +61,8 @@ type Spaceship struct {
 	gameover  chan *BaseObject
 	Vx        float64
 	Vy        float64
+	lifes int
+	lifeChannel chan<- int
 }
 
 func (spaceship *Spaceship) getNewSpeed(
@@ -116,10 +128,17 @@ func (spaceship *Spaceship) Move() {
 
 		select {
 		case <-spaceship.Cancel:
-			spaceship.Active = false
-			go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 			return
 		case <-spaceship.UnblockCh:
 		}
+	}
+}
+
+func (spaceship *Spaceship) Collide(objects []ScreenObject) {
+	spaceship.lifes--
+	spaceship.lifeChannel <- spaceship.lifes
+	if spaceship.lifes == 0 {
+		spaceship.Deactivate()
+		go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 	}
 }
