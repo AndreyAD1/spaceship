@@ -58,7 +58,7 @@ func NewScreenService() (*ScreenService, error) {
 	defStyle = defStyle.Foreground(tcell.ColorReset)
 	screen.SetStyle(defStyle)
 	width, height := screen.Size()
-	// Sometimes screen appears only after a resizing
+	// Sometimes a screen appears only after a resizing
 	screen.SetSize(width+1, height)
 	newSvc := ScreenService{
 		screen,

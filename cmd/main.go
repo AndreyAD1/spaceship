@@ -2,8 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
+	runtimeDebug "runtime/debug"
 	"runtime/pprof"
 
 	"github.com/AndreyAD1/spaceship/internal/application"
@@ -43,6 +45,9 @@ func main() {
 	defer func() {
 		if p := recover(); p != nil {
 			newLogger.Errorf("Internal error: %v", p)
+			stackTrace := runtimeDebug.Stack()
+			newLogger.Errorf("Error stack trace: %s", stackTrace)
+			fmt.Printf("Critical error: %s", stackTrace)
 		}
 	}()
 	app := application.NewApplication(newLogger)

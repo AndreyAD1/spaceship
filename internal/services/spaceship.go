@@ -128,6 +128,7 @@ func (spaceship *Spaceship) Move() {
 
 		select {
 		case <-spaceship.Cancel:
+			go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 			return
 		case <-spaceship.UnblockCh:
 		}
@@ -139,6 +140,5 @@ func (spaceship *Spaceship) Collide(objects []ScreenObject) {
 	spaceship.lifeChannel <- spaceship.lifes
 	if spaceship.lifes <= 0 && spaceship.Active {
 		spaceship.Deactivate()
-		go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 	}
 }
