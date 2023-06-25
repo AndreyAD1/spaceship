@@ -25,6 +25,7 @@ func GenerateStars(starsChan chan ScreenObject, screenSvc *ScreenService) {
 		style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 		baseObject := BaseObject{
 			false,
+			false,
 			true,
 			float64(starColumn),
 			float64(starLine),

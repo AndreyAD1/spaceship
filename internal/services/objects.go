@@ -18,10 +18,13 @@ type ScreenObject interface {
 	GetDrawStatus() bool
 	MarkDrawn()
 	Collide([]ScreenObject)
+	IsCollided() bool
+	MarkCollided(bool)
 }
 
 type BaseObject struct {
 	IsDrawn   bool
+	Collided  bool
 	Active    bool
 	X         float64 // a column of left upper corner
 	Y         float64 // a row of left upper corner
@@ -34,7 +37,13 @@ type BaseObject struct {
 
 func (baseObject *BaseObject) Deactivate() {
 	baseObject.Active = false
-	close(baseObject.Cancel)
+	select {
+	case _, isOpen := <-baseObject.Cancel:
+		if isOpen {
+			close(baseObject.Cancel)
+		}
+	default:
+	}
 }
 
 func (baseObject *BaseObject) IsActive() bool {
@@ -43,6 +52,7 @@ func (baseObject *BaseObject) IsActive() bool {
 
 func (baseObject *BaseObject) Unblock() {
 	baseObject.IsDrawn = false
+	baseObject.Collided = false
 	baseObject.UnblockCh <- struct{}{}
 }
 
@@ -89,4 +99,12 @@ func (baseObject *BaseObject) GetDrawStatus() bool {
 
 func (baseObject *BaseObject) Collide(objects []ScreenObject) {
 	baseObject.Deactivate()
+}
+
+func (baseObject *BaseObject) IsCollided() bool {
+	return baseObject.Collided
+}
+
+func (baseObject *BaseObject) MarkCollided(status bool) {
+	baseObject.Collided = status
 }

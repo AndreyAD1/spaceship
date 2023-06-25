@@ -66,6 +66,7 @@ func drawMenus(menuChan chan services.ScreenObject, screenSvc *services.ScreenSe
 	select {
 	case menu := <-menuChan:
 		screenSvc.Draw(menu)
+	default:
 	}
 }
 
@@ -104,13 +105,17 @@ func processInteractiveObjects(
 			// collision occurred
 			if len(objects) > 1 {
 				for _, object := range objects {
-					object.Collide(objects)
+					if !object.IsCollided() {
+						object.Collide(objects)
+						object.MarkCollided(true)
+					}
 				}
 			}
 		}
 	}
 
 	for _, object := range interObjects {
+		object.MarkCollided(false)
 		if object.IsActive() {
 			object.Unblock()
 		}

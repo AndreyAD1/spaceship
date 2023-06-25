@@ -29,6 +29,7 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 		}
 		baseObject := BaseObject{
 			false,
+			false,
 			true,
 			float64(rand.Intn(width - 2)),
 			-6,

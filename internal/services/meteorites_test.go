@@ -15,6 +15,7 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 	initialY, speed := float64(0), float64(1)
 	baseObject := services.BaseObject{
 		false,
+		false,
 		true,
 		0,
 		initialY,
@@ -77,6 +78,7 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 	initialY, speed := float64(2), float64(1)
 	baseObject := services.BaseObject{
 		false,
+		false,
 		true,
 		0,
 		initialY,
@@ -114,6 +116,7 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 
 func TestMeteorite_Collide(t *testing.T) {
 	baseObject := services.BaseObject{
+		false,
 		false,
 		true,
 		0,
