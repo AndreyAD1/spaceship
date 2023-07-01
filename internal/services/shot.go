@@ -58,6 +58,7 @@ Loop:
 		}
 	}
 	if !collisionWithAnotherShell {
+		shell.MarkCollided(true)
 		shell.Deactivate()
 	}
 }

@@ -107,7 +107,6 @@ func processInteractiveObjects(
 				for _, object := range objects {
 					if !object.IsCollided() {
 						object.Collide(objects)
-						object.MarkCollided(true)
 					}
 				}
 			}

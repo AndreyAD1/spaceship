@@ -81,5 +81,6 @@ func (meteorite *Meteorite) Collide(objects []ScreenObject) {
 	}
 	if !allObjectsAreMeteors {
 		meteorite.Deactivate()
+		meteorite.MarkCollided(true)
 	}
 }
