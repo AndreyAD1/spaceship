@@ -13,7 +13,7 @@ func GenerateMenu(
 		false,
 		true,
 		3,
-		3,
+		1,
 		style,
 		0,
 		"♥",
