@@ -34,7 +34,13 @@ type BaseObject struct {
 
 func (baseObject *BaseObject) Deactivate() {
 	baseObject.Active = false
-	close(baseObject.Cancel)
+	select {
+	case _, isOpen := <-baseObject.Cancel:
+		if isOpen {
+			close(baseObject.Cancel)
+		}
+	default:
+	}
 }
 
 func (baseObject *BaseObject) IsActive() bool {

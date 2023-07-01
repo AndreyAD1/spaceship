@@ -13,19 +13,20 @@ const (
 .'o'.
 |.-.|
 '   '`
-frictionCoefficient = 0.9
-accelerationCoefficient = 0.75
-shipHeight = 6
-shipWidth = 5
-maxSpeed = 0.3
-verticalAcceleration=0.3
-horizontalAcceleration=0.8
+	frictionCoefficient     = 0.9
+	accelerationCoefficient = 0.75
+	shipHeight              = 6
+	shipWidth               = 5
+	maxSpeed                = 0.3
+	verticalAcceleration    = 0.3
+	horizontalAcceleration  = 0.8
 )
 
 func GenerateShip(
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
 	gameover chan *BaseObject,
+	lifeChannel chan<- int,
 ) Spaceship {
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
@@ -39,18 +40,31 @@ func GenerateShip(
 		make(chan struct{}),
 		make(chan struct{}),
 	}
-	spaceship := Spaceship{baseObject, objects, screenSvc, gameover, 0, 0}
+	spaceship := Spaceship{
+		baseObject,
+		objects,
+		screenSvc,
+		gameover,
+		0,
+		0,
+		3,
+		lifeChannel,
+		false,
+	}
 	go spaceship.Move()
 	return spaceship
 }
 
 type Spaceship struct {
 	BaseObject
-	Objects   chan<- ScreenObject
-	ScreenSvc *ScreenService
-	gameover  chan *BaseObject
-	Vx        float64
-	Vy        float64
+	Objects     chan<- ScreenObject
+	ScreenSvc   *ScreenService
+	gameover    chan *BaseObject
+	Vx          float64
+	Vy          float64
+	lifes       int
+	lifeChannel chan<- int
+	collided    bool
 }
 
 func (spaceship *Spaceship) getNewSpeed(
@@ -71,7 +85,7 @@ func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
 	newY := spaceship.Y + spaceship.Vy
 	leftBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(newX, spaceship.Y)
 	rightBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(
-		newX+shipWidth-2, 
+		newX+shipWidth-2,
 		spaceship.Y,
 	)
 	if !leftBoundaryIsOk || !rightBoundaryIsOk {
@@ -80,7 +94,7 @@ func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
 	}
 	upperBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(spaceship.X, newY)
 	lowerBoundaryIsOk := spaceship.ScreenSvc.IsInsideScreen(
-		spaceship.X, 
+		spaceship.X,
 		newY+shipHeight-1,
 	)
 	if !upperBoundaryIsOk || !lowerBoundaryIsOk {
@@ -116,10 +130,22 @@ func (spaceship *Spaceship) Move() {
 
 		select {
 		case <-spaceship.Cancel:
-			spaceship.Active = false
-			go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 			return
 		case <-spaceship.UnblockCh:
+			spaceship.collided = false
 		}
+	}
+}
+
+func (spaceship *Spaceship) Collide(objects []ScreenObject) {
+	if spaceship.collided {
+		return
+	}
+	spaceship.collided = true
+	spaceship.lifes--
+	spaceship.lifeChannel <- spaceship.lifes
+	if spaceship.lifes <= 0 {
+		spaceship.Deactivate()
+		go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 	}
 }
