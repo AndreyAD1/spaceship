@@ -105,16 +105,13 @@ func processInteractiveObjects(
 			// collision occurred
 			if len(objects) > 1 {
 				for _, object := range objects {
-					if !object.IsCollided() {
-						object.Collide(objects)
-					}
+					object.Collide(objects)
 				}
 			}
 		}
 	}
 
 	for _, object := range interObjects {
-		object.MarkCollided(false)
 		if object.IsActive() {
 			object.Unblock()
 		}

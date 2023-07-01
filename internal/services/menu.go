@@ -11,7 +11,6 @@ func GenerateMenu(
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	baseObject := BaseObject{
 		false,
-		false,
 		true,
 		3,
 		3,

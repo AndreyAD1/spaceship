@@ -31,7 +31,6 @@ func GenerateShip(
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
 		false,
-		false,
 		true,
 		float64(width) / 2,
 		float64(height) - shipHeight,
@@ -50,6 +49,7 @@ func GenerateShip(
 		0,
 		3,
 		lifeChannel,
+		false,
 	}
 	go spaceship.Move()
 	return spaceship
@@ -64,6 +64,7 @@ type Spaceship struct {
 	Vy          float64
 	lifes       int
 	lifeChannel chan<- int
+	collided    bool
 }
 
 func (spaceship *Spaceship) getNewSpeed(
@@ -131,13 +132,17 @@ func (spaceship *Spaceship) Move() {
 		case <-spaceship.Cancel:
 			return
 		case <-spaceship.UnblockCh:
+			spaceship.collided = false
 		}
 	}
 }
 
 func (spaceship *Spaceship) Collide(objects []ScreenObject) {
+	if spaceship.collided {
+		return
+	}
+	spaceship.collided = true
 	spaceship.lifes--
-	spaceship.MarkCollided(true)
 	spaceship.lifeChannel <- spaceship.lifes
 	if spaceship.lifes <= 0 {
 		spaceship.Deactivate()

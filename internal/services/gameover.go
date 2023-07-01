@@ -17,7 +17,6 @@ func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
 	labelColumn := height / 4
 	gameover := BaseObject{
 		false,
-		false,
 		true,
 		float64(labelRow),
 		float64(labelColumn),

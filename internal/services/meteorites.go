@@ -29,7 +29,6 @@ func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
 		}
 		baseObject := BaseObject{
 			false,
-			false,
 			true,
 			float64(rand.Intn(width - 2)),
 			-6,
@@ -81,6 +80,5 @@ func (meteorite *Meteorite) Collide(objects []ScreenObject) {
 	}
 	if !allObjectsAreMeteors {
 		meteorite.Deactivate()
-		meteorite.MarkCollided(true)
 	}
 }

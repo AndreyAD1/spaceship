@@ -5,7 +5,6 @@ import "github.com/gdamore/tcell/v2"
 func Shot(screenSvc *ScreenService, objects chan<- ScreenObject, x, y float64) {
 	baseObject := BaseObject{
 		false,
-		false,
 		true,
 		x,
 		y,
@@ -58,7 +57,6 @@ Loop:
 		}
 	}
 	if !collisionWithAnotherShell {
-		shell.MarkCollided(true)
 		shell.Deactivate()
 	}
 }
