@@ -2,6 +2,7 @@ package services
 
 import (
 	"math"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -20,13 +21,25 @@ const (
 	maxSpeed                = 0.3
 	verticalAcceleration    = 0.3
 	horizontalAcceleration  = 0.8
+	blinkDuration           = 2000
+	blinkTimeout            = 200
 )
+
+var emptyView string = string([]rune{
+	' ', ' ', 0x85, ' ', '\n',
+	' ', 0x85, 0x85, 0x85, ' ', '\n',
+	' ', 0x85, 0x85, 0x85, ' ', '\n',
+	0x85, 0x85, 0x85, 0x85, 0x85, '\n',
+	0x85, 0x85, 0x85, 0x85, 0x85, '\n',
+	0x85, ' ', ' ', ' ', 0x85, '\n',
+})
 
 func GenerateShip(
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
 	gameover chan *BaseObject,
 	lifeChannel chan<- int,
+	invulnerableChannel chan ScreenObject,
 ) Spaceship {
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
@@ -50,6 +63,7 @@ func GenerateShip(
 		3,
 		lifeChannel,
 		false,
+		invulnerableChannel,
 	}
 	go spaceship.Move()
 	return spaceship
@@ -57,14 +71,15 @@ func GenerateShip(
 
 type Spaceship struct {
 	BaseObject
-	Objects     chan<- ScreenObject
-	ScreenSvc   *ScreenService
-	gameover    chan *BaseObject
-	Vx          float64
-	Vy          float64
-	lifes       int
-	lifeChannel chan<- int
-	collided    bool
+	Objects             chan<- ScreenObject
+	ScreenSvc           *ScreenService
+	gameover            chan *BaseObject
+	Vx                  float64
+	Vy                  float64
+	lifes               int
+	lifeChannel         chan<- int
+	collided            bool
+	invulnerableChannel chan<- ScreenObject
 }
 
 func (spaceship *Spaceship) getNewSpeed(
@@ -126,13 +141,17 @@ func (spaceship *Spaceship) Move() {
 		case NoEvent:
 			spaceship.apply_acceleration(0, 0)
 		}
-		spaceship.Objects <- spaceship
+
+		if spaceship.collided {
+			spaceship.invulnerableChannel <- spaceship
+		} else {
+			spaceship.Objects <- spaceship
+		}
 
 		select {
 		case <-spaceship.Cancel:
 			return
 		case <-spaceship.UnblockCh:
-			spaceship.collided = false
 		}
 	}
 }
@@ -147,5 +166,27 @@ func (spaceship *Spaceship) Collide(objects []ScreenObject) {
 	if spaceship.lifes <= 0 {
 		spaceship.Deactivate()
 		go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
+		return
+	}
+	go spaceship.Blink()
+}
+
+func (spaceship *Spaceship) Blink() {
+	views := []string{emptyView, SpaceshipView}
+	ticker := time.NewTicker(blinkTimeout * time.Millisecond)
+	defer ticker.Stop()
+	spaceship.View = emptyView
+	abort := time.After(blinkDuration * time.Millisecond)
+	i := 0
+	for {
+		select {
+		case <-ticker.C:
+			spaceship.View = views[i%2]
+			i++
+		case <-abort:
+			spaceship.View = SpaceshipView
+			spaceship.collided = false
+			return
+		}
 	}
 }
