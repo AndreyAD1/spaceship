@@ -2,6 +2,7 @@ package services
 
 import (
 	"math"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -20,7 +21,17 @@ const (
 	maxSpeed                = 0.3
 	verticalAcceleration    = 0.3
 	horizontalAcceleration  = 0.8
+	blinkDuration = 2000
+	blinkTimeout = 200
 )
+var emptyView string = string([]rune{
+	' ', ' ', 0x85, ' ', '\n',
+	' ', 0x85, 0x85, 0x85, ' ', '\n',
+	' ', 0x85, 0x85, 0x85, ' ', '\n',
+	0x85, 0x85, 0x85, 0x85, 0x85, '\n',
+	0x85, 0x85, 0x85, 0x85, 0x85, '\n',
+	0x85, ' ', ' ', ' ', 0x85, '\n',
+})
 
 func GenerateShip(
 	objects chan ScreenObject,
@@ -132,7 +143,6 @@ func (spaceship *Spaceship) Move() {
 		case <-spaceship.Cancel:
 			return
 		case <-spaceship.UnblockCh:
-			spaceship.collided = false
 		}
 	}
 }
@@ -147,5 +157,27 @@ func (spaceship *Spaceship) Collide(objects []ScreenObject) {
 	if spaceship.lifes <= 0 {
 		spaceship.Deactivate()
 		go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
+		return
+	}
+	go spaceship.Blink()
+}
+
+func (spaceship *Spaceship) Blink() {
+	views := []string{emptyView, SpaceshipView}
+	ticker := time.NewTicker(blinkTimeout * time.Millisecond)
+	spaceship.View = emptyView
+	defer ticker.Stop()
+	abort := time.After(blinkDuration * time.Millisecond)
+	i := 0
+	for {
+		select {
+		case <-ticker.C:
+			spaceship.View = views[i % 2]
+			i++
+		case <-abort:
+			spaceship.View = SpaceshipView
+			spaceship.collided = false
+			return
+		}
 	}
 }
