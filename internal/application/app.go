@@ -30,7 +30,8 @@ func (app Application) Run() error {
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
 	lifeChannel := services.GenerateMenu(menuChannel, screenService)
-	
+	invulnerableChannel := make(chan services.ScreenObject)
+
 	services.GenerateStars(starChannel, screenService)
 	go services.GenerateMeteorites(interactiveChannel, screenService)
 	services.GenerateShip(
@@ -38,6 +39,7 @@ func (app Application) Run() error {
 		screenService,
 		gameoverChannel,
 		lifeChannel,
+		invulnerableChannel,
 	)
 	go screenService.PollScreenEvents(ctx)
 
@@ -48,6 +50,7 @@ func (app Application) Run() error {
 		}
 		drawStars(starChannel, screenService)
 		processInteractiveObjects(interactiveChannel, screenService)
+		processInvulnerableObjects(invulnerableChannel, screenService)
 		select {
 		case gameover := <-gameoverChannel:
 			screenService.Draw(gameover)
@@ -63,10 +66,13 @@ func (app Application) Run() error {
 }
 
 func drawMenus(menuChan chan services.ScreenObject, screenSvc *services.ScreenService) {
-	select {
-	case menu := <-menuChan:
-		screenSvc.Draw(menu)
-	default:
+	for {
+		select {
+		case menu := <-menuChan:
+			screenSvc.Draw(menu)
+		default:
+			return
+		}
 	}
 }
 
@@ -80,6 +86,25 @@ func drawStars(starChan chan services.ScreenObject, screenSvc *services.ScreenSe
 		default:
 			for _, star := range stars {
 				star.Unblock()
+			}
+			return
+		}
+	}
+}
+
+func processInvulnerableObjects(
+	invulnerableChan chan services.ScreenObject,
+	screenSvc *services.ScreenService,
+) {
+	invulnerableObjects := []services.ScreenObject{}
+	for {
+		select {
+		case obj := <-invulnerableChan:
+			screenSvc.Draw(obj)
+			invulnerableObjects = append(invulnerableObjects, obj)
+		default:
+			for _, o := range invulnerableObjects {
+				o.Unblock()
 			}
 			return
 		}
