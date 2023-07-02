@@ -174,8 +174,8 @@ func (spaceship *Spaceship) Collide(objects []ScreenObject) {
 func (spaceship *Spaceship) Blink() {
 	views := []string{emptyView, SpaceshipView}
 	ticker := time.NewTicker(blinkTimeout * time.Millisecond)
-	spaceship.View = emptyView
 	defer ticker.Stop()
+	spaceship.View = emptyView
 	abort := time.After(blinkDuration * time.Millisecond)
 	i := 0
 	for {
