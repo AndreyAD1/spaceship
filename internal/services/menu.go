@@ -1,19 +1,23 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 )
 
 func GenerateMenu(
 	menuChan chan ScreenObject,
 	screenSvc *ScreenService,
+	winGoal int,
 ) chan int {
+	go runGoalMenu(menuChan, screenSvc, winGoal)
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	baseObject := BaseObject{
 		false,
 		true,
 		3,
-		1,
+		2,
 		style,
 		0,
 		"♥",
@@ -26,6 +30,28 @@ func GenerateMenu(
 	lifeCounter.UpdateCounterView(initialLifeNumber)
 	go lifeCounter.Run(menuChan)
 	return lifeChannel
+}
+
+func runGoalMenu(
+	menuChan chan ScreenObject, 
+	screenSvc *ScreenService,
+	winGoal int,
+ ) {
+	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
+	menu := BaseObject{
+		false,
+		true,
+		3,
+		1,
+		style,
+		0,
+		fmt.Sprintf("Meteorite Goal: %v", winGoal),
+		make(chan (struct{})),
+		make(chan (struct{})),
+	}
+	for {
+		menuChan <- &menu
+	}
 }
 
 type LifeCounter struct {
@@ -46,7 +72,7 @@ func (counter *LifeCounter) Run(menuChannel chan<- ScreenObject) {
 
 func (counter *LifeCounter) UpdateCounterView(lifeNumber int) {
 	counter.lifeNumber = lifeNumber
-	newView := ""
+	newView := "Lifes: "
 	for i := 0; i < counter.lifeNumber; i++ {
 		newView += "♥"
 		if i < counter.lifeNumber-1 {
