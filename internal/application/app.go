@@ -13,6 +13,8 @@ type Application struct {
 	FrameTimeout time.Duration
 }
 
+const meteoriteGoal = 5
+
 func NewApplication(logger *log.Logger) Application {
 	return Application{logger, 10 * time.Millisecond}
 }
@@ -40,6 +42,7 @@ func (app Application) Run() error {
 		gameoverChannel,
 		lifeChannel,
 		invulnerableChannel,
+		meteoriteGoal,
 	)
 	go screenService.PollScreenEvents(ctx)
 

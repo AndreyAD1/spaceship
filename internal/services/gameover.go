@@ -2,13 +2,20 @@ package services
 
 import "github.com/gdamore/tcell/v2"
 
-const label = `
+const gameOverLabel = `
  _____                         ______               
 / ____|                       /  __  \                
 | |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ 
 | | |_ |/ _| | '_ | _ \ / _ \ | |  | \ \ / / _ \ '__|
 | |__| | (_| | | | | | |  __/ | |__| |\ V /  __/ |   
 \ _____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|   
+`
+const winLabel = `
+__   _____  _   _  __        _____ _   _ _ 
+\ \ / / _ \| | | | \ \      / /_ _| \ | | |
+ \ V / | | | | | |  \ \ /\ / / | ||  \| | |
+  | || |_| | |_| |   \ V  V /  | || |\  |_|
+  |_| \___/ \___/     \_/\_/  |___|_| \_(_)
 `
 
 func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
@@ -22,7 +29,27 @@ func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
 		float64(labelColumn),
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		0.01,
-		label,
+		gameOverLabel,
+		make(chan struct{}),
+		make(chan struct{}),
+	}
+	for {
+		channel <- &gameover
+	}
+}
+
+func DrawWin(channel chan<- *BaseObject, screenSvc *ScreenService) {
+	width, height := screenSvc.screen.Size()
+	labelRow := width / 4
+	labelColumn := height / 4
+	gameover := BaseObject{
+		false,
+		true,
+		float64(labelRow),
+		float64(labelColumn),
+		tcell.StyleDefault.Background(tcell.ColorReset),
+		0.01,
+		winLabel,
 		make(chan struct{}),
 		make(chan struct{}),
 	}

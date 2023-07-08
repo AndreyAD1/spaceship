@@ -40,6 +40,7 @@ func GenerateShip(
 	gameover chan *BaseObject,
 	lifeChannel chan<- int,
 	invulnerableChannel chan ScreenObject,
+	winGoal int,
 ) Spaceship {
 	width, height := screenSvc.screen.Size()
 	baseObject := BaseObject{
@@ -65,7 +66,7 @@ func GenerateShip(
 		false,
 		invulnerableChannel,
 	}
-	go spaceship.Move()
+	go spaceship.Move(winGoal)
 	return spaceship
 }
 
@@ -120,7 +121,7 @@ func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
 	spaceship.Y = newY
 }
 
-func (spaceship *Spaceship) Move() {
+func (spaceship *Spaceship) Move(winGoal int) {
 	for {
 		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
@@ -140,6 +141,11 @@ func (spaceship *Spaceship) Move() {
 			)
 		case NoEvent:
 			spaceship.apply_acceleration(0, 0)
+		}
+		if destroyedMeteorites >= winGoal {
+			spaceship.Deactivate()
+			go DrawWin(spaceship.gameover, spaceship.ScreenSvc)
+			return
 		}
 
 		if spaceship.collided {

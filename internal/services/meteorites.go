@@ -2,6 +2,7 @@ package services
 
 import (
 	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -18,8 +19,13 @@ var MeteoriteRuneView []rune = []rune{
 	'/', 0x85, 0x85, 0x85, 0x85, 0x85, '/', '\n',
 	'\\', '_', '_', '_', '_', '/',
 }
+var mutx sync.Mutex
+var destroyedMeteorites = 0
 
-func GenerateMeteorites(events chan ScreenObject, screenSvc *ScreenService) {
+func GenerateMeteorites(
+	events chan ScreenObject,
+	screenSvc *ScreenService,
+) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
 	for {
@@ -80,5 +86,8 @@ func (meteorite *Meteorite) Collide(objects []ScreenObject) {
 	}
 	if !allObjectsAreMeteors {
 		meteorite.Deactivate()
+		mutx.Lock()
+		defer mutx.Unlock()
+		destroyedMeteorites++
 	}
 }
