@@ -13,6 +13,8 @@ type Application struct {
 	FrameTimeout time.Duration
 }
 
+const meteoriteGoal = 5
+
 func NewApplication(logger *log.Logger) Application {
 	return Application{logger, 10 * time.Millisecond}
 }
@@ -29,7 +31,7 @@ func (app Application) Run() error {
 	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
-	lifeChannel := services.GenerateMenu(menuChannel, screenService)
+	lifeChannel := services.GenerateMenu(menuChannel, meteoriteGoal)
 	invulnerableChannel := make(chan services.ScreenObject)
 
 	services.GenerateStars(starChannel, screenService)
@@ -40,6 +42,7 @@ func (app Application) Run() error {
 		gameoverChannel,
 		lifeChannel,
 		invulnerableChannel,
+		meteoriteGoal,
 	)
 	go screenService.PollScreenEvents(ctx)
 
