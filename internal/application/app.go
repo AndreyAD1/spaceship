@@ -31,11 +31,7 @@ func (app Application) Run() error {
 	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
-	lifeChannel := services.GenerateMenu(
-		menuChannel, 
-		screenService, 
-		meteoriteGoal,
-	)
+	lifeChannel := services.GenerateMenu(menuChannel, meteoriteGoal)
 	invulnerableChannel := make(chan services.ScreenObject)
 
 	services.GenerateStars(starChannel, screenService)

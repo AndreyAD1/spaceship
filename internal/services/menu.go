@@ -6,18 +6,15 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func GenerateMenu(
-	menuChan chan ScreenObject,
-	screenSvc *ScreenService,
-	winGoal int,
-) chan int {
-	go runGoalMenu(menuChan, screenSvc, winGoal)
+func GenerateMenu(menuChan chan ScreenObject, winGoal int) chan int {
+	go runGoalMenu(menuChan, winGoal)
+	go runMeteoriteCounter(menuChan)
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	baseObject := BaseObject{
 		false,
 		true,
 		3,
-		2,
+		3,
 		style,
 		0,
 		"♥",
@@ -32,11 +29,7 @@ func GenerateMenu(
 	return lifeChannel
 }
 
-func runGoalMenu(
-	menuChan chan ScreenObject, 
-	screenSvc *ScreenService,
-	winGoal int,
- ) {
+func runGoalMenu(menuChan chan ScreenObject, winGoal int) {
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	menu := BaseObject{
 		false,
@@ -50,6 +43,25 @@ func runGoalMenu(
 		make(chan (struct{})),
 	}
 	for {
+		menuChan <- &menu
+	}
+}
+
+func runMeteoriteCounter(menuChan chan ScreenObject) {
+	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
+	menu := BaseObject{
+		false,
+		true,
+		3,
+		2,
+		style,
+		0,
+		fmt.Sprintf("Destroyed Meteorites: %v", destroyedMeteorites),
+		make(chan (struct{})),
+		make(chan (struct{})),
+	}
+	for {
+		menu.View = fmt.Sprintf("Destroyed Meteorites: %v", destroyedMeteorites)
 		menuChan <- &menu
 	}
 }
