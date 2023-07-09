@@ -22,7 +22,7 @@ const (
 	verticalAcceleration    = 0.45
 	horizontalAcceleration  = 0.8
 	blinkDuration           = 2000
-	blinkTimeout            = 200
+	blinkTimeout            = 150
 )
 
 var emptyView string = string([]rune{
@@ -37,7 +37,7 @@ var emptyView string = string([]rune{
 func GenerateShip(
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
-	gameover chan *BaseObject,
+	gameover chan ScreenObject,
 	lifeChannel chan<- int,
 	invulnerableChannel chan ScreenObject,
 	winGoal int,
@@ -74,7 +74,7 @@ type Spaceship struct {
 	BaseObject
 	Objects             chan<- ScreenObject
 	ScreenSvc           *ScreenService
-	gameover            chan *BaseObject
+	gameover            chan<- ScreenObject
 	Vx                  float64
 	Vy                  float64
 	lifes               int
@@ -170,6 +170,7 @@ func (spaceship *Spaceship) Collide(objects []ScreenObject) {
 	spaceship.lifeChannel <- spaceship.lifes
 	if spaceship.lifes <= 0 {
 		spaceship.Deactivate()
+		// go Explode(spaceship.gameover)
 		go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
 		return
 	}

@@ -18,7 +18,7 @@ __   _____  _   _  __        _____ _   _ _
   |_| \___/ \___/     \_/\_/  |___|_| \_(_)
 `
 
-func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
+func DrawGameOver(channel chan<- ScreenObject, screenSvc *ScreenService) {
 	width, height := screenSvc.screen.Size()
 	labelRow := width / 4
 	labelColumn := height / 4
@@ -38,7 +38,7 @@ func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
 	}
 }
 
-func DrawWin(channel chan<- *BaseObject, screenSvc *ScreenService) {
+func DrawWin(channel chan<- ScreenObject, screenSvc *ScreenService) {
 	width, height := screenSvc.screen.Size()
 	labelRow := width / 4
 	labelColumn := height / 4

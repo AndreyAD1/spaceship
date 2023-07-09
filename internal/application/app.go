@@ -30,7 +30,6 @@ func (app Application) Run() error {
 	menuChannel := make(chan services.ScreenObject)
 	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
-	gameoverChannel := make(chan *services.BaseObject)
 	lifeChannel := services.GenerateMenu(menuChannel, meteoriteGoal)
 	invulnerableChannel := make(chan services.ScreenObject)
 
@@ -39,7 +38,7 @@ func (app Application) Run() error {
 	services.GenerateShip(
 		interactiveChannel,
 		screenService,
-		gameoverChannel,
+		menuChannel,
 		lifeChannel,
 		invulnerableChannel,
 		meteoriteGoal,
@@ -54,11 +53,6 @@ func (app Application) Run() error {
 		drawStars(starChannel, screenService)
 		processInteractiveObjects(interactiveChannel, screenService)
 		processInvulnerableObjects(invulnerableChannel, screenService)
-		select {
-		case gameover := <-gameoverChannel:
-			screenService.Draw(gameover)
-		default:
-		}
 		drawMenus(menuChannel, screenService)
 		screenService.ShowScreen()
 		time.Sleep(app.FrameTimeout)
