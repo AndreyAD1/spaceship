@@ -144,9 +144,7 @@ func (spaceship *Spaceship) Move(winGoal int) {
 		}
 
 		if destroyedMeteorites >= winGoal {
-			spaceship.Deactivate()
 			go DrawWin(spaceship.gameover, spaceship.ScreenSvc)
-			return
 		}
 
 		if spaceship.collided {
