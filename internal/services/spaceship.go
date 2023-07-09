@@ -142,6 +142,7 @@ func (spaceship *Spaceship) Move(winGoal int) {
 		case NoEvent:
 			spaceship.apply_acceleration(0, 0)
 		}
+
 		if destroyedMeteorites >= winGoal {
 			spaceship.Deactivate()
 			go DrawWin(spaceship.gameover, spaceship.ScreenSvc)

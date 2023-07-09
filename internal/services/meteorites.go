@@ -76,15 +76,16 @@ func (meteorite *Meteorite) Move() {
 }
 
 func (meteorite *Meteorite) Collide(objects []ScreenObject) {
-	allObjectsAreMeteors := true
+	allObjectsAreMeteorsOrSpaceship := true
 	for _, obj := range objects {
 		switch obj.(type) {
 		case *Meteorite:
+		case *Spaceship:
 		default:
-			allObjectsAreMeteors = false
+			allObjectsAreMeteorsOrSpaceship = false
 		}
 	}
-	if !allObjectsAreMeteors {
+	if !allObjectsAreMeteorsOrSpaceship {
 		meteorite.Deactivate()
 		mutx.Lock()
 		defer mutx.Unlock()
