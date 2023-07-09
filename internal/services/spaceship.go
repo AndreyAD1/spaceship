@@ -19,7 +19,7 @@ const (
 	shipHeight              = 6
 	shipWidth               = 5
 	maxSpeed                = 0.3
-	verticalAcceleration    = 0.3
+	verticalAcceleration    = 0.45
 	horizontalAcceleration  = 0.8
 	blinkDuration           = 2000
 	blinkTimeout            = 200
