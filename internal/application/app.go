@@ -35,7 +35,11 @@ func (app Application) Run() error {
 	invulnerableChannel := make(chan services.ScreenObject)
 
 	services.GenerateStars(starChannel, screenService)
-	go services.GenerateMeteorites(interactiveChannel, screenService)
+	go services.GenerateMeteorites(
+		interactiveChannel,
+		invulnerableChannel,
+		screenService,
+	)
 	services.GenerateShip(
 		interactiveChannel,
 		screenService,
