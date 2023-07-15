@@ -67,6 +67,7 @@ func GenerateShip(
 		invulnerableChannel,
 	}
 	go spaceship.Move(winGoal)
+	go GenerateExhaustGas(&spaceship, invulnerableChannel)
 	return spaceship
 }
 
