@@ -13,14 +13,14 @@ const (
 	exhaustGas2 = ` ) 
 ( )
  ( `
- 	exhaustGasTimeout = 100
+	exhaustGasTimeout = 100
 )
 
 func GenerateExhaustGas(spaceship *Spaceship, ch chan<- ScreenObject) {
 	baseObject := BaseObject{
 		false,
 		true,
-		spaceship.X + shipWidth / 2 - 1,
+		spaceship.X + shipWidth/2 - 1,
 		spaceship.Y + shipHeight - 1,
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		0,
@@ -35,7 +35,7 @@ func GenerateExhaustGas(spaceship *Spaceship, ch chan<- ScreenObject) {
 type ExhaustGas struct {
 	BaseObject
 	exhaustGasChannel chan<- ScreenObject
-	spaceship *Spaceship
+	spaceship         *Spaceship
 }
 
 func (exhaustGas *ExhaustGas) Run() {
@@ -57,7 +57,7 @@ func (exhaustGas *ExhaustGas) Run() {
 		if exhaustGas.spaceship.collided {
 			exhaustGas.View = ""
 		}
-		exhaustGas.X = exhaustGas.spaceship.X  + shipWidth / 2 - 1
+		exhaustGas.X = exhaustGas.spaceship.X + shipWidth/2 - 1
 		exhaustGas.Y = exhaustGas.spaceship.Y + shipHeight - 1
 		<-exhaustGas.UnblockCh
 		if !exhaustGas.spaceship.Active {
