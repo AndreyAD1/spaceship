@@ -19,7 +19,7 @@ const (
 	shipHeight              = 6
 	shipWidth               = 5
 	maxSpeed                = 0.3
-	verticalAcceleration    = 0.3
+	verticalAcceleration    = 0.45
 	horizontalAcceleration  = 0.8
 	blinkDuration           = 2000
 	blinkTimeout            = 200
@@ -37,7 +37,7 @@ var emptyView string = string([]rune{
 func GenerateShip(
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
-	gameover chan *BaseObject,
+	finalChannel chan *BaseObject,
 	lifeChannel chan<- int,
 	invulnerableChannel chan ScreenObject,
 	winGoal int,
@@ -58,7 +58,7 @@ func GenerateShip(
 		baseObject,
 		objects,
 		screenSvc,
-		gameover,
+		finalChannel,
 		0,
 		0,
 		3,
@@ -67,6 +67,7 @@ func GenerateShip(
 		invulnerableChannel,
 	}
 	go spaceship.Move(winGoal)
+	go GenerateExhaustGas(&spaceship, invulnerableChannel)
 	return spaceship
 }
 
@@ -74,7 +75,7 @@ type Spaceship struct {
 	BaseObject
 	Objects             chan<- ScreenObject
 	ScreenSvc           *ScreenService
-	gameover            chan *BaseObject
+	finalCh             chan *BaseObject
 	Vx                  float64
 	Vy                  float64
 	lifes               int
@@ -142,10 +143,9 @@ func (spaceship *Spaceship) Move(winGoal int) {
 		case NoEvent:
 			spaceship.apply_acceleration(0, 0)
 		}
+
 		if destroyedMeteorites >= winGoal {
-			spaceship.Deactivate()
-			go DrawWin(spaceship.gameover, spaceship.ScreenSvc)
-			return
+			go DrawWin(spaceship.finalCh, spaceship.ScreenSvc)
 		}
 
 		if spaceship.collided {
@@ -171,7 +171,8 @@ func (spaceship *Spaceship) Collide(objects []ScreenObject) {
 	spaceship.lifeChannel <- spaceship.lifes
 	if spaceship.lifes <= 0 {
 		spaceship.Deactivate()
-		go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
+		go DrawGameOver(spaceship.finalCh, spaceship.ScreenSvc)
+		go Explode(spaceship.invulnerableChannel, spaceship.X, spaceship.Y)
 		return
 	}
 	go spaceship.Blink()

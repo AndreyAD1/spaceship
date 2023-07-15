@@ -24,6 +24,7 @@ var destroyedMeteorites = 0
 
 func GenerateMeteorites(
 	events chan ScreenObject,
+	explosions chan ScreenObject,
 	screenSvc *ScreenService,
 ) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
@@ -44,15 +45,21 @@ func GenerateMeteorites(
 			make(chan (struct{})),
 			make(chan (struct{})),
 		}
-		meteorite := Meteorite{baseObject, events, screenSvc}
+		meteorite := Meteorite{
+			baseObject,
+			events,
+			screenSvc,
+			explosions,
+		}
 		go meteorite.Move()
 	}
 }
 
 type Meteorite struct {
 	BaseObject
-	Objects   chan<- ScreenObject
-	ScreenSvc ScreenSvc
+	Objects          chan<- ScreenObject
+	ScreenSvc        ScreenSvc
+	explosionChannel chan<- ScreenObject
 }
 
 func (meteorite *Meteorite) Move() {
@@ -76,16 +83,18 @@ func (meteorite *Meteorite) Move() {
 }
 
 func (meteorite *Meteorite) Collide(objects []ScreenObject) {
-	allObjectsAreMeteors := true
+	allObjectsAreMeteorsOrSpaceship := true
 	for _, obj := range objects {
 		switch obj.(type) {
 		case *Meteorite:
+		case *Spaceship:
 		default:
-			allObjectsAreMeteors = false
+			allObjectsAreMeteorsOrSpaceship = false
 		}
 	}
-	if !allObjectsAreMeteors {
+	if !allObjectsAreMeteorsOrSpaceship {
 		meteorite.Deactivate()
+		go Explode(meteorite.explosionChannel, meteorite.X, meteorite.Y)
 		mutx.Lock()
 		defer mutx.Unlock()
 		destroyedMeteorites++

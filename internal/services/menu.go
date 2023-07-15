@@ -7,14 +7,13 @@ import (
 )
 
 func GenerateMenu(menuChan chan ScreenObject, winGoal int) chan int {
-	go runGoalMenu(menuChan, winGoal)
-	go runMeteoriteCounter(menuChan)
+	go runMeteoriteCounter(menuChan, winGoal)
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	baseObject := BaseObject{
 		false,
 		true,
 		3,
-		3,
+		2,
 		style,
 		0,
 		"♥",
@@ -29,8 +28,9 @@ func GenerateMenu(menuChan chan ScreenObject, winGoal int) chan int {
 	return lifeChannel
 }
 
-func runGoalMenu(menuChan chan ScreenObject, winGoal int) {
+func runMeteoriteCounter(menuChan chan ScreenObject, winGoal int) {
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
+	template := "Destroyed Meteorites: %v/%v"
 	menu := BaseObject{
 		false,
 		true,
@@ -38,30 +38,12 @@ func runGoalMenu(menuChan chan ScreenObject, winGoal int) {
 		1,
 		style,
 		0,
-		fmt.Sprintf("Meteorite Goal: %v", winGoal),
+		fmt.Sprintf(template, destroyedMeteorites, winGoal),
 		make(chan (struct{})),
 		make(chan (struct{})),
 	}
 	for {
-		menuChan <- &menu
-	}
-}
-
-func runMeteoriteCounter(menuChan chan ScreenObject) {
-	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
-	menu := BaseObject{
-		false,
-		true,
-		3,
-		2,
-		style,
-		0,
-		fmt.Sprintf("Destroyed Meteorites: %v", destroyedMeteorites),
-		make(chan (struct{})),
-		make(chan (struct{})),
-	}
-	for {
-		menu.View = fmt.Sprintf("Destroyed Meteorites: %v", destroyedMeteorites)
+		menu.View = fmt.Sprintf(template, destroyedMeteorites, winGoal)
 		menuChan <- &menu
 	}
 }
