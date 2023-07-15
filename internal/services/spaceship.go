@@ -37,7 +37,7 @@ var emptyView string = string([]rune{
 func GenerateShip(
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
-	gameover chan *BaseObject,
+	finalChannel chan *BaseObject,
 	lifeChannel chan<- int,
 	invulnerableChannel chan ScreenObject,
 	winGoal int,
@@ -58,7 +58,7 @@ func GenerateShip(
 		baseObject,
 		objects,
 		screenSvc,
-		gameover,
+		finalChannel,
 		0,
 		0,
 		3,
@@ -74,7 +74,7 @@ type Spaceship struct {
 	BaseObject
 	Objects             chan<- ScreenObject
 	ScreenSvc           *ScreenService
-	gameover            chan *BaseObject
+	finalCh             chan *BaseObject
 	Vx                  float64
 	Vy                  float64
 	lifes               int
@@ -144,7 +144,7 @@ func (spaceship *Spaceship) Move(winGoal int) {
 		}
 
 		if destroyedMeteorites >= winGoal {
-			go DrawWin(spaceship.gameover, spaceship.ScreenSvc)
+			go DrawWin(spaceship.finalCh, spaceship.ScreenSvc)
 		}
 
 		if spaceship.collided {
@@ -170,7 +170,8 @@ func (spaceship *Spaceship) Collide(objects []ScreenObject) {
 	spaceship.lifeChannel <- spaceship.lifes
 	if spaceship.lifes <= 0 {
 		spaceship.Deactivate()
-		go DrawGameOver(spaceship.gameover, spaceship.ScreenSvc)
+		go DrawGameOver(spaceship.finalCh, spaceship.ScreenSvc)
+		go Explode(spaceship.invulnerableChannel, spaceship.X, spaceship.Y)
 		return
 	}
 	go spaceship.Blink()
