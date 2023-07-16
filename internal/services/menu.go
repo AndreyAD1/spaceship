@@ -21,7 +21,7 @@ func GenerateMenu(menuChan chan ScreenObject, winGoal int) chan int {
 		make(chan (struct{})),
 	}
 	initialLifeNumber := 3
-	lifeChannel := make(chan int)
+	lifeChannel := make(chan int, initialLifeNumber)
 	lifeCounter := LifeCounter{baseObject, initialLifeNumber, lifeChannel}
 	lifeCounter.UpdateCounterView(initialLifeNumber)
 	go lifeCounter.Run(menuChan)
@@ -43,8 +43,9 @@ func runMeteoriteCounter(menuChan chan ScreenObject, winGoal int) {
 		make(chan (struct{})),
 	}
 	for {
-		menu.View = fmt.Sprintf(template, destroyedMeteorites, winGoal)
 		menuChan <- &menu
+		menu.View = fmt.Sprintf(template, destroyedMeteorites, winGoal)
+		<-menu.UnblockCh
 	}
 }
 
@@ -56,11 +57,13 @@ type LifeCounter struct {
 
 func (counter *LifeCounter) Run(menuChannel chan<- ScreenObject) {
 	for {
+		menuChannel <- counter
 		select {
 		case lifeNumber := <-counter.lifeChannel:
 			counter.UpdateCounterView(lifeNumber)
-		case menuChannel <- counter:
+		default:
 		}
+		<-counter.UnblockCh
 	}
 }
 

@@ -134,12 +134,14 @@ func (spaceship *Spaceship) Move(winGoal int) {
 		case GoDown:
 			spaceship.apply_acceleration(0, verticalAcceleration)
 		case Shoot:
-			go Shot(
-				spaceship.ScreenSvc,
-				spaceship.Objects,
-				spaceship.X+2,
-				spaceship.Y-1,
-			)
+			if !spaceship.collided {
+				go Shot(
+					spaceship.ScreenSvc,
+					spaceship.Objects,
+					spaceship.X+2,
+					spaceship.Y-1,
+				)
+			}
 		case NoEvent:
 			spaceship.apply_acceleration(0, 0)
 		}

@@ -55,7 +55,7 @@ func (app Application) Run() error {
 		if screenService.Exit() {
 			break
 		}
-		drawStars(starChannel, screenService)
+		processInvulnerableObjects(starChannel, screenService)
 		processInteractiveObjects(interactiveChannel, screenService)
 		processInvulnerableObjects(invulnerableChannel, screenService)
 		select {
@@ -63,40 +63,13 @@ func (app Application) Run() error {
 			screenService.Draw(gameover)
 		default:
 		}
-		drawMenus(menuChannel, screenService)
+		processInvulnerableObjects(menuChannel, screenService)
 		screenService.ShowScreen()
 		time.Sleep(app.FrameTimeout)
 		screenService.ClearScreen()
 	}
 	app.Logger.Debug("finish the event loop")
 	return nil
-}
-
-func drawMenus(menuChan chan services.ScreenObject, screenSvc *services.ScreenService) {
-	for {
-		select {
-		case menu := <-menuChan:
-			screenSvc.Draw(menu)
-		default:
-			return
-		}
-	}
-}
-
-func drawStars(starChan chan services.ScreenObject, screenSvc *services.ScreenService) {
-	stars := []services.ScreenObject{}
-	for {
-		select {
-		case star := <-starChan:
-			screenSvc.Draw(star)
-			stars = append(stars, star)
-		default:
-			for _, star := range stars {
-				star.Unblock()
-			}
-			return
-		}
-	}
 }
 
 func processInvulnerableObjects(
