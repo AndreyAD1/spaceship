@@ -63,24 +63,13 @@ func (app Application) Run() error {
 			screenService.Draw(gameover)
 		default:
 		}
-		drawMenus(menuChannel, screenService)
+		processInvulnerableObjects(menuChannel, screenService)
 		screenService.ShowScreen()
 		time.Sleep(app.FrameTimeout)
 		screenService.ClearScreen()
 	}
 	app.Logger.Debug("finish the event loop")
 	return nil
-}
-
-func drawMenus(menuChan chan services.ScreenObject, screenSvc *services.ScreenService) {
-	for {
-		select {
-		case menu := <-menuChan:
-			screenSvc.Draw(menu)
-		default:
-			return
-		}
-	}
 }
 
 func processInvulnerableObjects(
