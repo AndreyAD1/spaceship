@@ -55,7 +55,7 @@ func (app Application) Run() error {
 		if screenService.Exit() {
 			break
 		}
-		drawStars(starChannel, screenService)
+		processInvulnerableObjects(starChannel, screenService)
 		processInteractiveObjects(interactiveChannel, screenService)
 		processInvulnerableObjects(invulnerableChannel, screenService)
 		select {
@@ -78,22 +78,6 @@ func drawMenus(menuChan chan services.ScreenObject, screenSvc *services.ScreenSe
 		case menu := <-menuChan:
 			screenSvc.Draw(menu)
 		default:
-			return
-		}
-	}
-}
-
-func drawStars(starChan chan services.ScreenObject, screenSvc *services.ScreenService) {
-	stars := []services.ScreenObject{}
-	for {
-		select {
-		case star := <-starChan:
-			screenSvc.Draw(star)
-			stars = append(stars, star)
-		default:
-			for _, star := range stars {
-				star.Unblock()
-			}
 			return
 		}
 	}
