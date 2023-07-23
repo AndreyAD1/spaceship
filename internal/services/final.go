@@ -19,7 +19,7 @@ __   _____  _   _  __        _____ _   _ _
 `
 
 func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
-	width, height := screenSvc.screen.Size()
+	width, height := screenSvc.GetScreenSize()
 	labelRow := width / 4
 	labelColumn := height / 4
 	gameover := BaseObject{
@@ -39,7 +39,7 @@ func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
 }
 
 func DrawWin(channel chan<- *BaseObject, screenSvc *ScreenService) {
-	width, height := screenSvc.screen.Size()
+	width, height := screenSvc.GetScreenSize()
 	labelRow := width / 4
 	labelColumn := height / 4
 	gameover := BaseObject{

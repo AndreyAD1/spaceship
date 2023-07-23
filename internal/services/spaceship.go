@@ -42,7 +42,7 @@ func GenerateShip(
 	invulnerableChannel chan ScreenObject,
 	winGoal int,
 ) Spaceship {
-	width, height := screenSvc.screen.Size()
+	width, height := screenSvc.GetScreenSize()
 	baseObject := BaseObject{
 		false,
 		true,
