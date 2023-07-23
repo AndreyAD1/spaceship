@@ -15,7 +15,7 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
 	ctx := log.WithContext(context.Background(), logger)
-	keys := []tcell.Key{
+	commands := []tcell.Key{
 		tcell.KeyLeft,
 		tcell.KeyLeft,
 		tcell.KeyRune,
@@ -30,23 +30,23 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 		{"immediate exit Escape", []tcell.Key{tcell.KeyEscape}},
 		{
 			"discard other keys and exit after Ctrl+C",
-			append(keys, tcell.KeyCtrlC),
+			append(commands, tcell.KeyCtrlC),
 		},
 		{
 			"discard other keys and exit after Escape",
-			append(keys, tcell.KeyEscape),
+			append(commands, tcell.KeyEscape),
 		},
 		{
 			"several exit commands",
 			[]tcell.Key{tcell.KeyCtrlC, tcell.KeyEscape},
 		},
 		{
-			"several exit Ctrl+C",
+			"several Ctrl+C commands",
 			[]tcell.Key{tcell.KeyCtrlC, tcell.KeyCtrlC},
 		},
 		{
-			"exit command is in the middle",
-			append(keys, []tcell.Key{tcell.KeyEscape, tcell.KeyRune}...),
+			"an exit command is in the middle",
+			append(commands, []tcell.Key{tcell.KeyEscape, tcell.KeyRune}...),
 		},
 	}
 	for _, tt := range tests {
@@ -192,11 +192,12 @@ func TestScreenService_IsInsideScreen(t *testing.T) {
 			defer screenMock.Fini()
 			err := screenMock.Init()
 			require.NoError(t, err)
-			screenMock.SetSize(screenSize, screenSize)
 			screenSvc := &ScreenService{
 				screen:         screenMock,
 				exitChannel:    make(chan struct{}),
 				controlChannel: make(chan ScreenEvent),
+				width: screenSize,
+				height: screenSize,
 			}
 			require.Equal(t, tt.expected, screenSvc.IsInsideScreen(tt.x, tt.y))
 		})
