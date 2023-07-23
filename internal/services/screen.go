@@ -39,6 +39,8 @@ type ScreenService struct {
 	screen         tcell.Screen
 	exitChannel    chan struct{}
 	controlChannel chan ScreenEvent
+	width          int
+	height         int
 }
 
 func NewScreenService() (*ScreenService, error) {
@@ -65,6 +67,8 @@ func NewScreenService() (*ScreenService, error) {
 		make(chan struct{}),
 		// a channel buffer allows a user to exit in a gameover state
 		make(chan ScreenEvent, 50),
+		width + 1,
+		height,
 	}
 	return &newSvc, nil
 }
@@ -146,7 +150,7 @@ func (screenSvc *ScreenService) Finish() {
 }
 
 func (screenSvc *ScreenService) IsInsideScreen(x, y float64) bool {
-	width, height := screenSvc.screen.Size()
+	width, height := screenSvc.GetScreenSize()
 	roundX, roundY := int(math.Round(x)), int(math.Round(y))
 	xIsOutside := roundX >= width-1 || roundX < 0
 	yIsOutside := roundY >= height || roundY < 0
@@ -164,7 +168,7 @@ func (screenSvc *ScreenService) Draw(obj ScreenObject) {
 }
 
 func (screenSvc *ScreenService) NewObjectList() [][][]ScreenObject {
-	width, height := screenSvc.screen.Size()
+	width, height := screenSvc.GetScreenSize()
 	newList := make([][][]ScreenObject, height)
 	for i := 0; i < height; i++ {
 		newList[i] = make([][]ScreenObject, width)
@@ -176,5 +180,5 @@ func (screenSvc *ScreenService) NewObjectList() [][][]ScreenObject {
 }
 
 func (screenSvc *ScreenService) GetScreenSize() (int, int) {
-	return screenSvc.screen.Size()
+	return screenSvc.width, screenSvc.height
 }
