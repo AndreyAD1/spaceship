@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -19,6 +20,7 @@ var MeteoriteRuneView []rune = []rune{
 	'/', 0x85, 0x85, 0x85, 0x85, 0x85, '/', '\n',
 	'\\', '_', '_', '_', '_', '/',
 }
+var maxMeteoriteWidth = 7
 var mutx sync.Mutex
 var destroyedMeteorites = 0
 
@@ -26,18 +28,29 @@ func GenerateMeteorites(
 	events chan ScreenObject,
 	explosions chan ScreenObject,
 	screenSvc *ScreenService,
+	logger *log.Logger,
 ) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
-	for {
-		time.Sleep(time.Millisecond * 1500)
-		if rand.Float32() < 0.4 {
+	meteoritesOnUpperEdge := make([]*Meteorite, width)
+Outer:	for {
+		time.Sleep(time.Millisecond * 200)
+		if rand.Float32() < 0.9 {
 			continue
+		}
+		column := rand.Intn(width - 2)
+		for i := column; i < column + maxMeteoriteWidth && i < width; i++ {
+			if meteorite := meteoritesOnUpperEdge[i]; meteorite != nil {
+				if meteorite.Y <= 1 && meteorite.Active {
+					continue Outer
+				}
+				meteoritesOnUpperEdge[i] = nil
+			}
 		}
 		baseObject := BaseObject{
 			false,
 			true,
-			float64(rand.Intn(width - 2)),
+			float64(column),
 			-6,
 			meteoriteStyle,
 			0.02,
@@ -50,6 +63,9 @@ func GenerateMeteorites(
 			events,
 			screenSvc,
 			explosions,
+		}
+		for i := column; i < column + maxMeteoriteWidth && i < width; i++ {
+			meteoritesOnUpperEdge[i] = &meteorite
 		}
 		go meteorite.Move()
 	}

@@ -39,6 +39,7 @@ func (app Application) Run() error {
 		interactiveChannel,
 		invulnerableChannel,
 		screenService,
+		app.Logger,
 	)
 	services.GenerateShip(
 		interactiveChannel,
