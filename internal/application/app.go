@@ -19,7 +19,7 @@ func NewApplication(logger *log.Logger) Application {
 	return Application{logger, 10 * time.Millisecond}
 }
 
-func (app Application) Run() error {
+func (app Application) Run(is_last_level bool) error {
 	ctx := log.WithContext(context.Background(), app.Logger)
 	screenService, err := services.NewScreenService()
 	if err != nil {
@@ -33,6 +33,7 @@ func (app Application) Run() error {
 	gameoverChannel := make(chan *services.BaseObject)
 	lifeChannel := services.GenerateMenu(menuChannel, meteoriteGoal)
 	invulnerableChannel := make(chan services.ScreenObject)
+	goalAchievedChannel := make(chan bool, 2)
 
 	services.GenerateStars(starChannel, screenService)
 	go services.GenerateMeteorites(
@@ -44,7 +45,7 @@ func (app Application) Run() error {
 	services.GenerateShip(
 		interactiveChannel,
 		screenService,
-		gameoverChannel,
+		goalAchievedChannel,
 		lifeChannel,
 		invulnerableChannel,
 		meteoriteGoal,
@@ -59,6 +60,21 @@ func (app Application) Run() error {
 		processInvulnerableObjects(starChannel, screenService)
 		processInteractiveObjects(interactiveChannel, screenService)
 		processInvulnerableObjects(invulnerableChannel, screenService)
+		select {
+		case <-ctx.Done():
+			break
+		case goalIsAchieved := <-goalAchievedChannel:
+			if goalIsAchieved && is_last_level {
+				go services.DrawWin(gameoverChannel, screenService)
+			}
+			if goalIsAchieved && !is_last_level {
+				return nil
+			}
+			if !goalIsAchieved {
+				go services.DrawGameOver(gameoverChannel, screenService)
+			}
+		default:
+		}
 		select {
 		case gameover := <-gameoverChannel:
 			screenService.Draw(gameover)

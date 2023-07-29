@@ -52,7 +52,7 @@ func main() {
 	}()
 	app := application.NewApplication(newLogger)
 	newLogger.Debug("run application")
-	err = app.Run()
+	err = app.Run(true)
 	if err != nil {
 		newLogger.Error(err)
 		os.Exit(1)
