@@ -34,7 +34,6 @@ func (app Application) Run(is_last_level bool) error {
 	gameoverChannel := make(chan *services.BaseObject)
 	lifeChannel := services.GenerateMenu(menuChannel, meteoriteGoal)
 	invulnerableChannel := make(chan services.ScreenObject)
-	goalAchievedChannel := make(chan bool, 2)
 
 	services.GenerateStars(starChannel, screenService)
 	go services.GenerateMeteorites(
@@ -46,10 +45,8 @@ func (app Application) Run(is_last_level bool) error {
 	services.GenerateShip(
 		interactiveChannel,
 		screenService,
-		goalAchievedChannel,
 		lifeChannel,
 		invulnerableChannel,
-		meteoriteGoal,
 	)
 	go screenService.PollScreenEvents(ctx)
 	shipCollisions, meteoriteCollisions := 0, 0

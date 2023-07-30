@@ -37,10 +37,8 @@ var emptyView string = string([]rune{
 func GenerateShip(
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
-	finalChannel chan bool,
 	lifeChannel chan<- int,
 	invulnerableChannel chan ScreenObject,
-	winGoal int,
 ) Spaceship {
 	width, height := screenSvc.GetScreenSize()
 	baseObject := BaseObject{
@@ -58,16 +56,14 @@ func GenerateShip(
 		baseObject,
 		objects,
 		screenSvc,
-		finalChannel,
 		0,
 		0,
 		3,
 		lifeChannel,
 		false,
 		invulnerableChannel,
-		false,
 	}
-	go spaceship.Move(winGoal)
+	go spaceship.Move()
 	go GenerateExhaustGas(&spaceship, invulnerableChannel)
 	return spaceship
 }
@@ -76,14 +72,12 @@ type Spaceship struct {
 	BaseObject
 	Objects             chan<- ScreenObject
 	ScreenSvc           *ScreenService
-	finalCh             chan bool
 	Vx                  float64
 	Vy                  float64
 	Lifes               int
 	lifeChannel         chan<- int
 	collided            bool
 	invulnerableChannel chan<- ScreenObject
-	win                 bool
 }
 
 func (spaceship *Spaceship) getNewSpeed(
@@ -124,7 +118,7 @@ func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
 	spaceship.Y = newY
 }
 
-func (spaceship *Spaceship) Move(winGoal int) {
+func (spaceship *Spaceship) Move() {
 	for {
 		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
