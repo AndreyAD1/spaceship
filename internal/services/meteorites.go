@@ -1,11 +1,11 @@
 package services
 
 import (
+	"context"
 	"math/rand"
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/log"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -25,10 +25,10 @@ var mutx sync.Mutex
 var destroyedMeteorites = 0
 
 func GenerateMeteorites(
+	ctx context.Context,
 	events chan ScreenObject,
 	explosions chan ScreenObject,
 	screenSvc *ScreenService,
-	logger *log.Logger,
 ) {
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
