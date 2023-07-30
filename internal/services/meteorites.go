@@ -98,7 +98,7 @@ func (meteorite *Meteorite) Move() {
 	}
 }
 
-func (meteorite *Meteorite) Collide(objects []ScreenObject) {
+func (meteorite *Meteorite) Collide(objects []ScreenObject) bool {
 	allObjectsAreMeteorsOrSpaceship := true
 	for _, obj := range objects {
 		switch obj.(type) {
@@ -114,5 +114,7 @@ func (meteorite *Meteorite) Collide(objects []ScreenObject) {
 		mutx.Lock()
 		defer mutx.Unlock()
 		destroyedMeteorites++
+		return true
 	}
+	return false
 }

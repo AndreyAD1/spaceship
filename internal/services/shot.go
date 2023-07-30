@@ -42,7 +42,7 @@ func (shell *Shell) Move() {
 	}
 }
 
-func (shell *Shell) Collide(objects []ScreenObject) {
+func (shell *Shell) Collide(objects []ScreenObject) bool {
 	collisionWithAnotherShell := false
 Loop:
 	for _, obj := range objects {
@@ -58,5 +58,7 @@ Loop:
 	}
 	if !collisionWithAnotherShell {
 		shell.Deactivate()
+		return true
 	}
+	return false
 }

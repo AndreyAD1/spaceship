@@ -14,6 +14,7 @@ type Application struct {
 }
 
 const meteoriteGoal = 5
+const shipLifes = 3
 
 func NewApplication(logger *log.Logger) Application {
 	return Application{logger, 10 * time.Millisecond}
@@ -51,6 +52,8 @@ func (app Application) Run(is_last_level bool) error {
 		meteoriteGoal,
 	)
 	go screenService.PollScreenEvents(ctx)
+	shipCollisions, meteoriteCollisions := 0, 0
+	gameIsOver := false
 
 	app.Logger.Debug("start an event loop")
 	for {
@@ -58,23 +61,23 @@ func (app Application) Run(is_last_level bool) error {
 			break
 		}
 		processInvulnerableObjects(starChannel, screenService)
-		processInteractiveObjects(interactiveChannel, screenService)
+		shipCollisions, meteoriteCollisions = processInteractiveObjects(
+			interactiveChannel, 
+			screenService, 
+			shipCollisions, 
+			meteoriteCollisions,
+		)
 		processInvulnerableObjects(invulnerableChannel, screenService)
-		select {
-		case <-ctx.Done():
-			break
-		case goalIsAchieved := <-goalAchievedChannel:
-			if goalIsAchieved && is_last_level {
-				go services.DrawWin(gameoverChannel, screenService)
-			}
-			if goalIsAchieved && !is_last_level {
-				return nil
-			}
-			if !goalIsAchieved {
-				go services.DrawGameOver(gameoverChannel, screenService)
-			}
-		default:
+
+		if shipCollisions >= shipLifes && !gameIsOver {
+			go services.DrawGameOver(gameoverChannel, screenService)
+			gameIsOver = true
 		}
+		if meteoriteCollisions >= meteoriteGoal && !gameIsOver {
+			go services.DrawWin(gameoverChannel, screenService)
+			gameIsOver = true
+		}
+
 		select {
 		case gameover := <-gameoverChannel:
 			screenService.Draw(gameover)
@@ -111,7 +114,8 @@ func processInvulnerableObjects(
 func processInteractiveObjects(
 	objectChannel chan services.ScreenObject,
 	screenService *services.ScreenService,
-) {
+	spaceshipCollisions, destroyedMeteorites int,
+) (int, int) {
 	screenObjects, interObjects := getScreenObjects(objectChannel, screenService)
 	for y, row := range screenObjects {
 		for x, objects := range row {
@@ -127,17 +131,26 @@ func processInteractiveObjects(
 			// collision occurred
 			if len(objects) > 1 {
 				for _, object := range objects {
-					object.Collide(objects)
+					is_collided := object.Collide(objects)
+					if is_collided {
+						switch object.(type) {
+						case *services.Spaceship:
+							spaceshipCollisions++
+						case *services.Meteorite:
+							destroyedMeteorites++
+						}
+					}
 				}
 			}
 		}
 	}
-
+	
 	for _, object := range interObjects {
 		if object.IsActive() {
 			object.Unblock()
 		}
 	}
+	return spaceshipCollisions, destroyedMeteorites
 }
 
 func getScreenObjects(

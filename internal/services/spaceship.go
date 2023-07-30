@@ -79,7 +79,7 @@ type Spaceship struct {
 	finalCh             chan bool
 	Vx                  float64
 	Vy                  float64
-	lifes               int
+	Lifes               int
 	lifeChannel         chan<- int
 	collided            bool
 	invulnerableChannel chan<- ScreenObject
@@ -148,11 +148,6 @@ func (spaceship *Spaceship) Move(winGoal int) {
 			spaceship.apply_acceleration(0, 0)
 		}
 
-		if destroyedMeteorites >= winGoal && !spaceship.win {
-			spaceship.win = true
-			spaceship.finalCh <- true
-		}
-
 		if spaceship.collided {
 			spaceship.invulnerableChannel <- spaceship
 		} else {
@@ -167,22 +162,20 @@ func (spaceship *Spaceship) Move(winGoal int) {
 	}
 }
 
-func (spaceship *Spaceship) Collide(objects []ScreenObject) {
+func (spaceship *Spaceship) Collide(objects []ScreenObject) bool {
 	if spaceship.collided {
-		return
+		return false
 	}
 	spaceship.collided = true
-	spaceship.lifes--
-	spaceship.lifeChannel <- spaceship.lifes
-	if spaceship.lifes <= 0 {
-		spaceship.Deactivate()
-		go Explode(spaceship.invulnerableChannel, spaceship.X, spaceship.Y)
-		if !spaceship.win {
-			spaceship.finalCh <- false
-		}
-		return
+	spaceship.Lifes--
+	spaceship.lifeChannel <- spaceship.Lifes
+	if spaceship.Lifes > 0 {
+		go spaceship.Blink()
+		return true
 	}
-	go spaceship.Blink()
+	spaceship.Deactivate()
+	go Explode(spaceship.invulnerableChannel, spaceship.X, spaceship.Y)
+	return true
 }
 
 func (spaceship *Spaceship) Blink() {
