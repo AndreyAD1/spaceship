@@ -70,6 +70,7 @@ func (lev level) Run(
 		}
 		processInvulnerableObjects(starChannel, screenService)
 		shipCollisions, meteoriteCollisions = processInteractiveObjects(
+			ctx,
 			interactiveChannel,
 			screenService,
 			shipCollisions,
@@ -123,6 +124,7 @@ func processInvulnerableObjects(
 }
 
 func processInteractiveObjects(
+	ctx context.Context,
 	objectChannel chan services.ScreenObject,
 	screenService *services.ScreenService,
 	spaceshipCollisions, destroyedMeteorites int,
@@ -142,7 +144,7 @@ func processInteractiveObjects(
 			// collision occurred
 			if len(objects) > 1 {
 				for _, object := range objects {
-					is_collided := object.Collide(objects)
+					is_collided := object.Collide(ctx, objects)
 					if is_collided {
 						switch object.(type) {
 						case *services.Spaceship:

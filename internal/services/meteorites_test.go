@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -31,7 +32,7 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 		Objects:    chan<- services.ScreenObject(objectChannel),
 		ScreenSvc:  MockedScreenSvc,
 	}
-	go meteorite.Move()
+	go meteorite.Move(context.Background())
 
 	select {
 	case receivedMeteorite := <-objectChannel:
@@ -93,7 +94,7 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 		Objects:    chan<- services.ScreenObject(objectChannel),
 		ScreenSvc:  MockedScreenSvc,
 	}
-	go meteorite.Move()
+	go meteorite.Move(context.Background())
 
 	select {
 	case <-objectChannel:
@@ -172,7 +173,7 @@ func TestMeteorite_Collide(t *testing.T) {
 				Objects:    objectChannel,
 				ScreenSvc:  screenMock,
 			}
-			meteorite.Collide(tt.collisionObjects)
+			meteorite.Collide(context.Background(), tt.collisionObjects)
 			require.Equal(t, tt.expectActiveState, meteorite.Active)
 		})
 	}

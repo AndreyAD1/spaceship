@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"math"
 	"time"
 
@@ -157,7 +158,7 @@ func (spaceship *Spaceship) Move() {
 	}
 }
 
-func (spaceship *Spaceship) Collide(objects []ScreenObject) bool {
+func (spaceship *Spaceship) Collide(ctx context.Context, objects []ScreenObject) bool {
 	if spaceship.collided {
 		return false
 	}
@@ -169,7 +170,7 @@ func (spaceship *Spaceship) Collide(objects []ScreenObject) bool {
 		return true
 	}
 	spaceship.Deactivate()
-	go Explode(spaceship.invulnerableChannel, spaceship.X, spaceship.Y)
+	go Explode(ctx, spaceship.invulnerableChannel, spaceship.X, spaceship.Y)
 	return true
 }
 

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"math"
 	"unicode"
 
@@ -17,7 +18,7 @@ type ScreenObject interface {
 	GetView() string
 	GetDrawStatus() bool
 	MarkDrawn()
-	Collide([]ScreenObject) bool
+	Collide(context.Context, []ScreenObject) bool
 }
 
 type BaseObject struct {
@@ -93,7 +94,7 @@ func (baseObject *BaseObject) GetDrawStatus() bool {
 	return baseObject.IsDrawn
 }
 
-func (baseObject *BaseObject) Collide(objects []ScreenObject) bool {
+func (baseObject *BaseObject) Collide(ctx context.Context, objects []ScreenObject) bool {
 	baseObject.Deactivate()
 	return true
 }

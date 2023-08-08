@@ -36,6 +36,11 @@ func GenerateMeteorites(
 	meteoritesOnUpperEdge := make([]*Meteorite, width)
 Outer:
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		time.Sleep(time.Millisecond * 200)
 		if rand.Float32() < 0.9 {
 			continue
@@ -69,7 +74,7 @@ Outer:
 		for i := column; i < column+maxMeteoriteWidth && i < width; i++ {
 			meteoritesOnUpperEdge[i] = &meteorite
 		}
-		go meteorite.Move()
+		go meteorite.Move(ctx)
 	}
 }
 
@@ -80,7 +85,7 @@ type Meteorite struct {
 	explosionChannel chan<- ScreenObject
 }
 
-func (meteorite *Meteorite) Move() {
+func (meteorite *Meteorite) Move(ctx context.Context) {
 	for {
 		newY := meteorite.Y + meteorite.MaxSpeed
 		_, height := meteorite.ScreenSvc.GetScreenSize()
@@ -92,6 +97,8 @@ func (meteorite *Meteorite) Move() {
 		meteorite.Objects <- meteorite
 
 		select {
+		case <-ctx.Done():
+			return
 		case <-meteorite.Cancel:
 			meteorite.Active = false
 			return
@@ -100,7 +107,7 @@ func (meteorite *Meteorite) Move() {
 	}
 }
 
-func (meteorite *Meteorite) Collide(objects []ScreenObject) bool {
+func (meteorite *Meteorite) Collide(ctx context.Context, objects []ScreenObject) bool {
 	allObjectsAreMeteorsOrSpaceship := true
 	for _, obj := range objects {
 		switch obj.(type) {
@@ -112,7 +119,7 @@ func (meteorite *Meteorite) Collide(objects []ScreenObject) bool {
 	}
 	if !allObjectsAreMeteorsOrSpaceship {
 		meteorite.Deactivate()
-		go Explode(meteorite.explosionChannel, meteorite.X, meteorite.Y)
+		go Explode(ctx, meteorite.explosionChannel, meteorite.X, meteorite.Y)
 		mutx.Lock()
 		defer mutx.Unlock()
 		destroyedMeteorites++
