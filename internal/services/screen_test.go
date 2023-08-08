@@ -196,8 +196,8 @@ func TestScreenService_IsInsideScreen(t *testing.T) {
 				screen:         screenMock,
 				exitChannel:    make(chan struct{}),
 				controlChannel: make(chan ScreenEvent),
-				width: screenSize,
-				height: screenSize,
+				width:          screenSize,
+				height:         screenSize,
 			}
 			require.Equal(t, tt.expected, screenSvc.IsInsideScreen(tt.x, tt.y))
 		})

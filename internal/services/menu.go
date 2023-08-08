@@ -1,13 +1,14 @@
 package services
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gdamore/tcell/v2"
 )
 
-func GenerateMenu(menuChan chan ScreenObject, winGoal int) chan int {
-	go runMeteoriteCounter(menuChan, winGoal)
+func GenerateMenu(ctx context.Context, menuChan chan ScreenObject, winGoal int) chan int {
+	go runMeteoriteCounter(ctx, menuChan, winGoal)
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	baseObject := BaseObject{
 		false,
@@ -24,11 +25,11 @@ func GenerateMenu(menuChan chan ScreenObject, winGoal int) chan int {
 	lifeChannel := make(chan int, initialLifeNumber)
 	lifeCounter := LifeCounter{baseObject, initialLifeNumber, lifeChannel}
 	lifeCounter.UpdateCounterView(initialLifeNumber)
-	go lifeCounter.Run(menuChan)
+	go lifeCounter.Run(ctx, menuChan)
 	return lifeChannel
 }
 
-func runMeteoriteCounter(menuChan chan ScreenObject, winGoal int) {
+func runMeteoriteCounter(ctx context.Context, menuChan chan ScreenObject, winGoal int) {
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	template := "Destroyed Meteorites: %v/%v"
 	menu := BaseObject{
@@ -43,9 +44,19 @@ func runMeteoriteCounter(menuChan chan ScreenObject, winGoal int) {
 		make(chan (struct{})),
 	}
 	for {
-		menuChan <- &menu
+		select {
+		case menuChan <- &menu:
+		case <-ctx.Done():
+			return
+		}
+
 		menu.View = fmt.Sprintf(template, destroyedMeteorites, winGoal)
-		<-menu.UnblockCh
+
+		select {
+		case <-menu.UnblockCh:
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
@@ -55,15 +66,25 @@ type LifeCounter struct {
 	lifeChannel <-chan int
 }
 
-func (counter *LifeCounter) Run(menuChannel chan<- ScreenObject) {
+func (counter *LifeCounter) Run(ctx context.Context, menuChannel chan<- ScreenObject) {
 	for {
-		menuChannel <- counter
+		select {
+		case menuChannel <- counter:
+		case <-ctx.Done():
+			return
+		}
+
 		select {
 		case lifeNumber := <-counter.lifeChannel:
 			counter.UpdateCounterView(lifeNumber)
 		default:
 		}
-		<-counter.UnblockCh
+
+		select {
+		case <-counter.UnblockCh:
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 

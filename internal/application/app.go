@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"runtime"
 	"time"
 
 	"github.com/AndreyAD1/spaceship/internal/services"
@@ -17,7 +18,7 @@ func NewApplication(logger *log.Logger) Application {
 	return Application{logger, 10 * time.Millisecond}
 }
 
-func (app Application) Run(is_last_level bool) error {
+func (app Application) Run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	ctx = log.WithContext(ctx, app.Logger)
@@ -27,14 +28,22 @@ func (app Application) Run(is_last_level bool) error {
 	}
 	defer screenService.Finish()
 
-	levelConfigs := []levelConfig {
+	levelConfigs := []levelConfig{
 		{5, 3, false},
 		{7, 2, true},
 	}
-	
-	for _, levelConfig := range levelConfigs {
+
+	for i, levelConfig := range levelConfigs {
 		level := NewLevel(levelConfig, app.FrameTimeout)
 		err = level.Run(ctx, screenService)
+		app.Logger.Debugf(
+			"goroutines after a level %v: %v",
+			i,
+			runtime.NumGoroutine(),
+		)
+		if err != nil {
+			return err
+		}
 	}
-	return err
+	return nil
 }

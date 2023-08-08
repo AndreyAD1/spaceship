@@ -34,13 +34,14 @@ func GenerateMeteorites(
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
 	meteoritesOnUpperEdge := make([]*Meteorite, width)
-Outer:	for {
+Outer:
+	for {
 		time.Sleep(time.Millisecond * 200)
 		if rand.Float32() < 0.9 {
 			continue
 		}
 		column := rand.Intn(width - 2)
-		for i := column; i < column + maxMeteoriteWidth && i < width; i++ {
+		for i := column; i < column+maxMeteoriteWidth && i < width; i++ {
 			if meteorite := meteoritesOnUpperEdge[i]; meteorite != nil {
 				if meteorite.Y <= 1 && meteorite.Active {
 					continue Outer
@@ -65,7 +66,7 @@ Outer:	for {
 			screenSvc,
 			explosions,
 		}
-		for i := column; i < column + maxMeteoriteWidth && i < width; i++ {
+		for i := column; i < column+maxMeteoriteWidth && i < width; i++ {
 			meteoritesOnUpperEdge[i] = &meteorite
 		}
 		go meteorite.Move()

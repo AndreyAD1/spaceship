@@ -32,14 +32,16 @@ func NewLevel(config levelConfig, frameTimeout time.Duration) level {
 }
 
 func (lev level) Run(
-	ctx context.Context, 
+	ctx context.Context,
 	screenService *services.ScreenService,
 ) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	menuChannel := make(chan services.ScreenObject)
 	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
-	lifeChannel := services.GenerateMenu(menuChannel, lev.meteoriteGoal)
+	lifeChannel := services.GenerateMenu(ctx, menuChannel, lev.meteoriteGoal)
 	invulnerableChannel := make(chan services.ScreenObject)
 
 	services.GenerateStars(starChannel, screenService)
@@ -67,9 +69,9 @@ func (lev level) Run(
 		}
 		processInvulnerableObjects(starChannel, screenService)
 		shipCollisions, meteoriteCollisions = processInteractiveObjects(
-			interactiveChannel, 
-			screenService, 
-			shipCollisions, 
+			interactiveChannel,
+			screenService,
+			shipCollisions,
 			meteoriteCollisions,
 		)
 		processInvulnerableObjects(invulnerableChannel, screenService)
@@ -152,7 +154,7 @@ func processInteractiveObjects(
 			}
 		}
 	}
-	
+
 	for _, object := range interObjects {
 		if object.IsActive() {
 			object.Unblock()
