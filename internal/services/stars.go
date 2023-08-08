@@ -1,13 +1,14 @@
 package services
 
 import (
+	"context"
 	"math/rand"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
 
-func GenerateStars(starsChan chan ScreenObject, screenSvc *ScreenService) {
+func GenerateStars(ctx context.Context, starsChan chan ScreenObject, screenSvc *ScreenService) {
 	width, height := screenSvc.GetScreenSize()
 	screenSquare := width * height
 	usedCoords := make([][]bool, height)
@@ -35,7 +36,7 @@ func GenerateStars(starsChan chan ScreenObject, screenSvc *ScreenService) {
 			make(chan (struct{})),
 		}
 		star := Star{baseObject, starsChan}
-		go star.Blink()
+		go star.Blink(ctx)
 		usedCoords[starLine][starColumn] = true
 	}
 }
@@ -45,12 +46,17 @@ type Star struct {
 	StarChan chan<- ScreenObject
 }
 
-func (star *Star) Blink() {
+func (star *Star) Blink(ctx context.Context) {
 	tickOffset := time.Duration(rand.Intn(400) + 200)
 	ticker := time.NewTicker(tickOffset * time.Millisecond)
 	tickPhase := 0
 	for {
-		star.StarChan <- star
+		select {
+		case <-ctx.Done():
+			return
+		case star.StarChan <- star:
+		}
+		
 		select {
 		case <-ticker.C:
 			switch tickPhase {
@@ -69,6 +75,11 @@ func (star *Star) Blink() {
 			}
 		default:
 		}
-		<-star.UnblockCh
+		
+		select {
+		case <-ctx.Done():
+			return
+		case <-star.UnblockCh:
+		}
 	}
 }
