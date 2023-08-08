@@ -7,7 +7,12 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func GenerateMenu(ctx context.Context, menuChan chan ScreenObject, winGoal int) chan int {
+func GenerateMenu(
+	ctx context.Context,
+	menuChan chan ScreenObject,
+	initialLifeNumber,
+	winGoal int,
+) chan int {
 	go runMeteoriteCounter(ctx, menuChan, winGoal)
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	baseObject := BaseObject{
@@ -21,7 +26,6 @@ func GenerateMenu(ctx context.Context, menuChan chan ScreenObject, winGoal int) 
 		make(chan (struct{})),
 		make(chan (struct{})),
 	}
-	initialLifeNumber := 3
 	lifeChannel := make(chan int, initialLifeNumber)
 	lifeCounter := LifeCounter{baseObject, initialLifeNumber, lifeChannel}
 	lifeCounter.UpdateCounterView(initialLifeNumber)

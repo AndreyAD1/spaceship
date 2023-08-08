@@ -39,6 +39,7 @@ func GenerateShip(
 	screenSvc *ScreenService,
 	lifeChannel chan<- int,
 	invulnerableChannel chan ScreenObject,
+	initialLifeNumber int,
 ) Spaceship {
 	width, height := screenSvc.GetScreenSize()
 	baseObject := BaseObject{
@@ -58,7 +59,7 @@ func GenerateShip(
 		screenSvc,
 		0,
 		0,
-		3,
+		initialLifeNumber,
 		lifeChannel,
 		false,
 		invulnerableChannel,

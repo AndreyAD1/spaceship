@@ -41,9 +41,9 @@ func (lev level) Run(
 	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
-	lifeChannel := services.GenerateMenu(ctx, menuChannel, lev.meteoriteGoal)
 	invulnerableChannel := make(chan services.ScreenObject)
 
+	lifeChannel := services.GenerateMenu(ctx, menuChannel, lev.lifes, lev.meteoriteGoal)
 	services.GenerateStars(starChannel, screenService)
 	go services.GenerateMeteorites(
 		ctx,
@@ -56,6 +56,7 @@ func (lev level) Run(
 		screenService,
 		lifeChannel,
 		invulnerableChannel,
+		lev.lifes,
 	)
 	go screenService.PollScreenEvents(ctx)
 	shipCollisions, meteoriteCollisions := 0, 0
