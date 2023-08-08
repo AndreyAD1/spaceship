@@ -30,6 +30,7 @@ func GenerateMeteorites(
 	explosions chan ScreenObject,
 	screenSvc *ScreenService,
 ) {
+	destroyedMeteorites = 0
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
 	meteoritesOnUpperEdge := make([]*Meteorite, width)
