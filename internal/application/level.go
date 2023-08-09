@@ -9,12 +9,14 @@ import (
 )
 
 type levelConfig struct {
+	name          string
 	meteoriteGoal int
 	lifes         int
 	isLastLevel   bool
 }
 
 type level struct {
+	name          string
 	meteoriteGoal int
 	lifes         int
 	isLastLevel   bool
@@ -23,6 +25,7 @@ type level struct {
 
 func NewLevel(config levelConfig, frameTimeout time.Duration) level {
 	newLevel := level{
+		config.name,
 		config.meteoriteGoal,
 		config.lifes,
 		config.isLastLevel,
@@ -43,7 +46,7 @@ func (lev level) Run(
 	gameoverChannel := make(chan *services.BaseObject)
 	invulnerableChannel := make(chan services.ScreenObject)
 
-	lifeChannel := services.GenerateMenu(ctx, menuChannel, lev.lifes, lev.meteoriteGoal)
+	lifeChannel := services.GenerateMenu(ctx, menuChannel, lev.name, lev.lifes, lev.meteoriteGoal)
 	services.GenerateStars(ctx, starChannel, screenService)
 	go services.GenerateMeteorites(
 		ctx,

@@ -29,8 +29,8 @@ func (app Application) Run() error {
 	defer screenService.Finish()
 
 	levelConfigs := []levelConfig{
-		{5, 3, false},
-		{7, 2, true},
+		{"Level 1", 5, 3, false},
+		{"Level 2", 7, 2, true},
 	}
 
 	for i, levelConfig := range levelConfigs {

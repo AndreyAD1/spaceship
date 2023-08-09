@@ -10,16 +10,17 @@ import (
 func GenerateMenu(
 	ctx context.Context,
 	menuChan chan ScreenObject,
+	levelName string,
 	initialLifeNumber,
 	winGoal int,
 ) chan int {
-	go runMeteoriteCounter(ctx, menuChan, winGoal)
+	go runMeteoriteCounter(ctx, menuChan, levelName, winGoal)
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	baseObject := BaseObject{
 		false,
 		true,
 		3,
-		2,
+		3,
 		style,
 		0,
 		"♥",
@@ -33,9 +34,9 @@ func GenerateMenu(
 	return lifeChannel
 }
 
-func runMeteoriteCounter(ctx context.Context, menuChan chan ScreenObject, winGoal int) {
+func runMeteoriteCounter(ctx context.Context, menuChan chan ScreenObject, levelName string, winGoal int) {
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
-	template := "Destroyed Meteorites: %v/%v"
+	template := "%v\nDestroyed Meteorites: %v/%v"
 	menu := BaseObject{
 		false,
 		true,
@@ -43,7 +44,7 @@ func runMeteoriteCounter(ctx context.Context, menuChan chan ScreenObject, winGoa
 		1,
 		style,
 		0,
-		fmt.Sprintf(template, destroyedMeteorites, winGoal),
+		fmt.Sprintf(template, levelName, destroyedMeteorites, winGoal),
 		make(chan (struct{})),
 		make(chan (struct{})),
 	}
@@ -54,7 +55,7 @@ func runMeteoriteCounter(ctx context.Context, menuChan chan ScreenObject, winGoa
 			return
 		}
 
-		menu.View = fmt.Sprintf(template, destroyedMeteorites, winGoal)
+		menu.View = fmt.Sprintf(template, levelName, destroyedMeteorites, winGoal)
 
 		select {
 		case <-menu.UnblockCh:
