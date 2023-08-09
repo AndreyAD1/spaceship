@@ -45,6 +45,7 @@ func (lev level) Run(
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
 	invulnerableChannel := make(chan services.ScreenObject)
+	var levelEnd <-chan time.Time 
 
 	lifeChannel := services.GenerateMenu(
 		ctx,
@@ -92,16 +93,20 @@ func (lev level) Run(
 			gameIsOver = true
 		}
 		if meteoriteCollisions >= lev.meteoriteGoal && !gameIsOver {
-			if !lev.isLastLevel {
-				return nil
+			if lev.isLastLevel {
+				go services.DrawWin(gameoverChannel, screenService)
 			}
-			go services.DrawWin(gameoverChannel, screenService)
+			if !lev.isLastLevel && levelEnd == nil {
+				levelEnd = time.After(2 * time.Second)
+			}
 			gameIsOver = true
 		}
 
 		select {
 		case gameover := <-gameoverChannel:
 			screenService.Draw(gameover)
+		case <-levelEnd:
+			return nil
 		default:
 		}
 		processInvulnerableObjects(menuChannel, screenService)
