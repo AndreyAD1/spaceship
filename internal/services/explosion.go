@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -34,7 +35,7 @@ var explosionFrames []string = []string{
     `,
 }
 
-func Explode(ch chan<- ScreenObject, XCentre, YCentre float64) {
+func Explode(ctx context.Context, ch chan<- ScreenObject, XCentre, YCentre float64) {
 	frameIndex := 0
 	explosion := BaseObject{
 		false,
@@ -50,7 +51,12 @@ func Explode(ch chan<- ScreenObject, XCentre, YCentre float64) {
 	ticker := time.NewTicker(explosionFrameTimeout)
 	defer ticker.Stop()
 	for {
-		ch <- &explosion
+		select {
+		case <-ctx.Done():
+			return
+		case ch <- &explosion:
+		}
+
 		select {
 		case <-ticker.C:
 			frameIndex++
@@ -61,6 +67,10 @@ func Explode(ch chan<- ScreenObject, XCentre, YCentre float64) {
 			explosion.View = explosionFrames[frameIndex]
 		default:
 		}
-		<-explosion.UnblockCh
+		select {
+		case <-ctx.Done():
+			return
+		case <-explosion.UnblockCh:
+		}
 	}
 }

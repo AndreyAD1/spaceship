@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"math"
 	"time"
 
@@ -37,10 +38,9 @@ var emptyView string = string([]rune{
 func GenerateShip(
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
-	finalChannel chan *BaseObject,
 	lifeChannel chan<- int,
 	invulnerableChannel chan ScreenObject,
-	winGoal int,
+	initialLifeNumber int,
 ) Spaceship {
 	width, height := screenSvc.GetScreenSize()
 	baseObject := BaseObject{
@@ -58,15 +58,14 @@ func GenerateShip(
 		baseObject,
 		objects,
 		screenSvc,
-		finalChannel,
 		0,
 		0,
-		3,
+		initialLifeNumber,
 		lifeChannel,
 		false,
 		invulnerableChannel,
 	}
-	go spaceship.Move(winGoal)
+	go spaceship.Move()
 	go GenerateExhaustGas(&spaceship, invulnerableChannel)
 	return spaceship
 }
@@ -75,10 +74,9 @@ type Spaceship struct {
 	BaseObject
 	Objects             chan<- ScreenObject
 	ScreenSvc           *ScreenService
-	finalCh             chan *BaseObject
 	Vx                  float64
 	Vy                  float64
-	lifes               int
+	Lifes               int
 	lifeChannel         chan<- int
 	collided            bool
 	invulnerableChannel chan<- ScreenObject
@@ -122,7 +120,7 @@ func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
 	spaceship.Y = newY
 }
 
-func (spaceship *Spaceship) Move(winGoal int) {
+func (spaceship *Spaceship) Move() {
 	for {
 		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
@@ -146,10 +144,6 @@ func (spaceship *Spaceship) Move(winGoal int) {
 			spaceship.apply_acceleration(0, 0)
 		}
 
-		if destroyedMeteorites >= winGoal {
-			go DrawWin(spaceship.finalCh, spaceship.ScreenSvc)
-		}
-
 		if spaceship.collided {
 			spaceship.invulnerableChannel <- spaceship
 		} else {
@@ -164,20 +158,20 @@ func (spaceship *Spaceship) Move(winGoal int) {
 	}
 }
 
-func (spaceship *Spaceship) Collide(objects []ScreenObject) {
+func (spaceship *Spaceship) Collide(ctx context.Context, objects []ScreenObject) bool {
 	if spaceship.collided {
-		return
+		return false
 	}
 	spaceship.collided = true
-	spaceship.lifes--
-	spaceship.lifeChannel <- spaceship.lifes
-	if spaceship.lifes <= 0 {
-		spaceship.Deactivate()
-		go DrawGameOver(spaceship.finalCh, spaceship.ScreenSvc)
-		go Explode(spaceship.invulnerableChannel, spaceship.X, spaceship.Y)
-		return
+	spaceship.Lifes--
+	spaceship.lifeChannel <- spaceship.Lifes
+	if spaceship.Lifes > 0 {
+		go spaceship.Blink()
+		return true
 	}
-	go spaceship.Blink()
+	spaceship.Deactivate()
+	go Explode(ctx, spaceship.invulnerableChannel, spaceship.X, spaceship.Y)
+	return true
 }
 
 func (spaceship *Spaceship) Blink() {

@@ -1,6 +1,10 @@
 package services
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"context"
+
+	"github.com/gdamore/tcell/v2"
+)
 
 func Shot(screenSvc *ScreenService, objects chan<- ScreenObject, x, y float64) {
 	baseObject := BaseObject{
@@ -42,7 +46,7 @@ func (shell *Shell) Move() {
 	}
 }
 
-func (shell *Shell) Collide(objects []ScreenObject) {
+func (shell *Shell) Collide(ctx context.Context, objects []ScreenObject) bool {
 	collisionWithAnotherShell := false
 Loop:
 	for _, obj := range objects {
@@ -58,5 +62,7 @@ Loop:
 	}
 	if !collisionWithAnotherShell {
 		shell.Deactivate()
+		return true
 	}
+	return false
 }

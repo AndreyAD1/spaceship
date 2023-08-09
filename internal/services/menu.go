@@ -1,36 +1,47 @@
 package services
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gdamore/tcell/v2"
 )
 
-func GenerateMenu(menuChan chan ScreenObject, winGoal int) chan int {
-	go runMeteoriteCounter(menuChan, winGoal)
+func GenerateMenu(
+	ctx context.Context,
+	menuChan chan ScreenObject,
+	levelName string,
+	initialLifeNumber,
+	winGoal int,
+) chan int {
+	go runMeteoriteCounter(ctx, menuChan, levelName, winGoal)
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	baseObject := BaseObject{
 		false,
 		true,
 		3,
-		2,
+		3,
 		style,
 		0,
 		"♥",
 		make(chan (struct{})),
 		make(chan (struct{})),
 	}
-	initialLifeNumber := 3
 	lifeChannel := make(chan int, initialLifeNumber)
 	lifeCounter := LifeCounter{baseObject, initialLifeNumber, lifeChannel}
 	lifeCounter.UpdateCounterView(initialLifeNumber)
-	go lifeCounter.Run(menuChan)
+	go lifeCounter.Run(ctx, menuChan)
 	return lifeChannel
 }
 
-func runMeteoriteCounter(menuChan chan ScreenObject, winGoal int) {
+func runMeteoriteCounter(
+	ctx context.Context,
+	menuChan chan ScreenObject,
+	levelName string,
+	winGoal int,
+) {
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
-	template := "Destroyed Meteorites: %v/%v"
+	template := "%v\nDestroyed Meteorites: %v/%v"
 	menu := BaseObject{
 		false,
 		true,
@@ -38,14 +49,24 @@ func runMeteoriteCounter(menuChan chan ScreenObject, winGoal int) {
 		1,
 		style,
 		0,
-		fmt.Sprintf(template, destroyedMeteorites, winGoal),
+		fmt.Sprintf(template, levelName, destroyedMeteorites, winGoal),
 		make(chan (struct{})),
 		make(chan (struct{})),
 	}
 	for {
-		menuChan <- &menu
-		menu.View = fmt.Sprintf(template, destroyedMeteorites, winGoal)
-		<-menu.UnblockCh
+		select {
+		case menuChan <- &menu:
+		case <-ctx.Done():
+			return
+		}
+
+		menu.View = fmt.Sprintf(template, levelName, destroyedMeteorites, winGoal)
+
+		select {
+		case <-menu.UnblockCh:
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
@@ -55,15 +76,25 @@ type LifeCounter struct {
 	lifeChannel <-chan int
 }
 
-func (counter *LifeCounter) Run(menuChannel chan<- ScreenObject) {
+func (counter *LifeCounter) Run(ctx context.Context, menuChannel chan<- ScreenObject) {
 	for {
-		menuChannel <- counter
+		select {
+		case menuChannel <- counter:
+		case <-ctx.Done():
+			return
+		}
+
 		select {
 		case lifeNumber := <-counter.lifeChannel:
 			counter.UpdateCounterView(lifeNumber)
 		default:
 		}
-		<-counter.UnblockCh
+
+		select {
+		case <-counter.UnblockCh:
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 

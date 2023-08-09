@@ -1,11 +1,11 @@
 package services
 
 import (
+	"context"
 	"math/rand"
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/log"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -25,21 +25,28 @@ var mutx sync.Mutex
 var destroyedMeteorites = 0
 
 func GenerateMeteorites(
+	ctx context.Context,
 	events chan ScreenObject,
 	explosions chan ScreenObject,
 	screenSvc *ScreenService,
-	logger *log.Logger,
 ) {
+	destroyedMeteorites = 0
 	meteoriteStyle := tcell.StyleDefault.Background(tcell.ColorReset)
 	width, _ := screenSvc.GetScreenSize()
 	meteoritesOnUpperEdge := make([]*Meteorite, width)
-Outer:	for {
+Outer:
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		time.Sleep(time.Millisecond * 200)
 		if rand.Float32() < 0.9 {
 			continue
 		}
 		column := rand.Intn(width - 2)
-		for i := column; i < column + maxMeteoriteWidth && i < width; i++ {
+		for i := column; i < column+maxMeteoriteWidth && i < width; i++ {
 			if meteorite := meteoritesOnUpperEdge[i]; meteorite != nil {
 				if meteorite.Y <= 1 && meteorite.Active {
 					continue Outer
@@ -64,10 +71,10 @@ Outer:	for {
 			screenSvc,
 			explosions,
 		}
-		for i := column; i < column + maxMeteoriteWidth && i < width; i++ {
+		for i := column; i < column+maxMeteoriteWidth && i < width; i++ {
 			meteoritesOnUpperEdge[i] = &meteorite
 		}
-		go meteorite.Move()
+		go meteorite.Move(ctx)
 	}
 }
 
@@ -78,7 +85,7 @@ type Meteorite struct {
 	explosionChannel chan<- ScreenObject
 }
 
-func (meteorite *Meteorite) Move() {
+func (meteorite *Meteorite) Move(ctx context.Context) {
 	for {
 		newY := meteorite.Y + meteorite.MaxSpeed
 		_, height := meteorite.ScreenSvc.GetScreenSize()
@@ -90,6 +97,8 @@ func (meteorite *Meteorite) Move() {
 		meteorite.Objects <- meteorite
 
 		select {
+		case <-ctx.Done():
+			return
 		case <-meteorite.Cancel:
 			meteorite.Active = false
 			return
@@ -98,7 +107,7 @@ func (meteorite *Meteorite) Move() {
 	}
 }
 
-func (meteorite *Meteorite) Collide(objects []ScreenObject) {
+func (meteorite *Meteorite) Collide(ctx context.Context, objects []ScreenObject) bool {
 	allObjectsAreMeteorsOrSpaceship := true
 	for _, obj := range objects {
 		switch obj.(type) {
@@ -110,9 +119,11 @@ func (meteorite *Meteorite) Collide(objects []ScreenObject) {
 	}
 	if !allObjectsAreMeteorsOrSpaceship {
 		meteorite.Deactivate()
-		go Explode(meteorite.explosionChannel, meteorite.X, meteorite.Y)
+		go Explode(ctx, meteorite.explosionChannel, meteorite.X, meteorite.Y)
 		mutx.Lock()
 		defer mutx.Unlock()
 		destroyedMeteorites++
+		return true
 	}
+	return false
 }

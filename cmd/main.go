@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	runtimeDebug "runtime/debug"
 	"runtime/pprof"
 
@@ -49,6 +50,7 @@ func main() {
 			newLogger.Errorf("Error stack trace: %s", stackTrace)
 			fmt.Printf("Critical error: %s", stackTrace)
 		}
+		newLogger.Debugf("final goroutine number: %v", runtime.NumGoroutine())
 	}()
 	app := application.NewApplication(newLogger)
 	newLogger.Debug("run application")
