@@ -34,7 +34,12 @@ func GenerateMenu(
 	return lifeChannel
 }
 
-func runMeteoriteCounter(ctx context.Context, menuChan chan ScreenObject, levelName string, winGoal int) {
+func runMeteoriteCounter(
+	ctx context.Context,
+	menuChan chan ScreenObject,
+	levelName string,
+	winGoal int,
+) {
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	template := "%v\nDestroyed Meteorites: %v/%v"
 	menu := BaseObject{

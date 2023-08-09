@@ -46,7 +46,13 @@ func (lev level) Run(
 	gameoverChannel := make(chan *services.BaseObject)
 	invulnerableChannel := make(chan services.ScreenObject)
 
-	lifeChannel := services.GenerateMenu(ctx, menuChannel, lev.name, lev.lifes, lev.meteoriteGoal)
+	lifeChannel := services.GenerateMenu(
+		ctx,
+		menuChannel,
+		lev.name,
+		lev.lifes,
+		lev.meteoriteGoal,
+	)
 	services.GenerateStars(ctx, starChannel, screenService)
 	go services.GenerateMeteorites(
 		ctx,

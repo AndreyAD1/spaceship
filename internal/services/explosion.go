@@ -56,7 +56,7 @@ func Explode(ctx context.Context, ch chan<- ScreenObject, XCentre, YCentre float
 			return
 		case ch <- &explosion:
 		}
-		
+
 		select {
 		case <-ticker.C:
 			frameIndex++

@@ -57,7 +57,7 @@ func (star *Star) Blink(ctx context.Context) {
 			return
 		case star.StarChan <- star:
 		}
-		
+
 		select {
 		case <-ticker.C:
 			switch tickPhase {
@@ -76,7 +76,7 @@ func (star *Star) Blink(ctx context.Context) {
 			}
 		default:
 		}
-		
+
 		select {
 		case <-ctx.Done():
 			return
