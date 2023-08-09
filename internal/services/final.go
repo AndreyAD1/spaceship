@@ -17,31 +17,29 @@ __   _____  _   _  __        _____ _   _ _
   | || |_| | |_| |   \ V  V /  | || |\  |_|
   |_| \___/ \___/     \_/\_/  |___|_| \_(_)
 `
+const nextLevel = `
+ _  _         _     _                _       
+| \| |_____ _| |_  | |   _____ _____| |      
+| .' / -_) \ /  _| | |__/ -_) V / -_) |_ _ _ 
+|_|\_\___/_\_\\__| |____\___|\_/\___|_(_|_|_)
+`
 
 func DrawGameOver(channel chan<- *BaseObject, screenSvc *ScreenService) {
-	width, height := screenSvc.GetScreenSize()
-	labelRow := width / 4
-	labelColumn := height / 4
-	gameover := BaseObject{
-		false,
-		true,
-		float64(labelRow),
-		float64(labelColumn),
-		tcell.StyleDefault.Background(tcell.ColorReset),
-		0.01,
-		gameOverLabel,
-		make(chan struct{}),
-		make(chan struct{}),
-	}
-	for {
-		channel <- &gameover
-	}
+	draw(channel, screenSvc, gameOverLabel)
 }
 
 func DrawWin(channel chan<- *BaseObject, screenSvc *ScreenService) {
+	draw(channel, screenSvc, winLabel)
+}
+
+func DrawNextLevel(channel chan<- *BaseObject, screenSvc *ScreenService) {
+	draw(channel, screenSvc, nextLevel)
+}
+
+func draw(channel chan<- *BaseObject, screenSvc *ScreenService, view string) {
 	width, height := screenSvc.GetScreenSize()
-	labelRow := width / 4
-	labelColumn := height / 4
+	labelRow := width / 3
+	labelColumn := height / 3
 	gameover := BaseObject{
 		false,
 		true,
@@ -49,7 +47,7 @@ func DrawWin(channel chan<- *BaseObject, screenSvc *ScreenService) {
 		float64(labelColumn),
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		0.01,
-		winLabel,
+		view,
 		make(chan struct{}),
 		make(chan struct{}),
 	}

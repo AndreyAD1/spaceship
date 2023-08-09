@@ -45,7 +45,7 @@ func (lev level) Run(
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
 	invulnerableChannel := make(chan services.ScreenObject)
-	var levelEnd <-chan time.Time 
+	var levelEnd <-chan time.Time
 
 	lifeChannel := services.GenerateMenu(
 		ctx,
@@ -97,6 +97,7 @@ func (lev level) Run(
 				go services.DrawWin(gameoverChannel, screenService)
 			}
 			if !lev.isLastLevel && levelEnd == nil {
+				go services.DrawNextLevel(gameoverChannel, screenService)
 				levelEnd = time.After(2 * time.Second)
 			}
 			gameIsOver = true
