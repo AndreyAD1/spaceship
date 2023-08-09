@@ -49,6 +49,7 @@ type Star struct {
 func (star *Star) Blink(ctx context.Context) {
 	tickOffset := time.Duration(rand.Intn(400) + 200)
 	ticker := time.NewTicker(tickOffset * time.Millisecond)
+	defer ticker.Stop()
 	tickPhase := 0
 	for {
 		select {
