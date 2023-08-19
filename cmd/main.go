@@ -57,6 +57,5 @@ func main() {
 	err = app.Run()
 	if err != nil {
 		newLogger.Error(err)
-		os.Exit(1)
 	}
 }

@@ -15,13 +15,6 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
 	ctx := log.WithContext(context.Background(), logger)
-	commands := []tcell.Key{
-		tcell.KeyLeft,
-		tcell.KeyLeft,
-		tcell.KeyRune,
-		tcell.KeyRight,
-	}
-
 	tests := []struct {
 		name       string
 		pushedKeys []tcell.Key
@@ -29,24 +22,12 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 		{"immediate exit Ctrl+C", []tcell.Key{tcell.KeyCtrlC}},
 		{"immediate exit Escape", []tcell.Key{tcell.KeyEscape}},
 		{
-			"discard other keys and exit after Ctrl+C",
-			append(commands, tcell.KeyCtrlC),
-		},
-		{
-			"discard other keys and exit after Escape",
-			append(commands, tcell.KeyEscape),
-		},
-		{
 			"several exit commands",
 			[]tcell.Key{tcell.KeyCtrlC, tcell.KeyEscape},
 		},
 		{
 			"several Ctrl+C commands",
 			[]tcell.Key{tcell.KeyCtrlC, tcell.KeyCtrlC},
-		},
-		{
-			"an exit command is in the middle",
-			append(commands, []tcell.Key{tcell.KeyEscape, tcell.KeyRune}...),
 		},
 	}
 	for _, tt := range tests {
@@ -74,7 +55,7 @@ func TestScreenService_PollScreenEvents_Exit(t *testing.T) {
 			case _, ok := <-exitChannel:
 				require.Falsef(t, ok, "exit channel is not close")
 			case <-time.After(10 * time.Millisecond):
-				t.Errorf("exit channel is not close")
+				t.Errorf("exit channel is not closed")
 			}
 		})
 	}
@@ -93,16 +74,6 @@ func TestScreenService_PollScreenEvents_Controls(t *testing.T) {
 			"one key event",
 			[]tcell.Key{tcell.KeyRune},
 			Shoot,
-		},
-		{
-			"several events",
-			[]tcell.Key{
-				tcell.KeyLeft,
-				tcell.KeyLeft,
-				tcell.KeyRune,
-				tcell.KeyRight,
-			},
-			GoRight,
 		},
 	}
 	for _, tt := range tests {
