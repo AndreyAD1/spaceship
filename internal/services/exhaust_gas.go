@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -16,7 +17,11 @@ const (
 	exhaustGasTimeout = 100
 )
 
-func GenerateExhaustGas(spaceship *Spaceship, ch chan<- ScreenObject) {
+func GenerateExhaustGas(
+	ctx context.Context,
+	spaceship *Spaceship,
+	ch chan<- ScreenObject,
+) {
 	baseObject := BaseObject{
 		false,
 		true,
@@ -29,7 +34,7 @@ func GenerateExhaustGas(spaceship *Spaceship, ch chan<- ScreenObject) {
 		make(chan struct{}),
 	}
 	exhaustGas := ExhaustGas{baseObject, ch, spaceship}
-	go exhaustGas.Run()
+	go exhaustGas.Run(ctx)
 }
 
 type ExhaustGas struct {
@@ -38,13 +43,18 @@ type ExhaustGas struct {
 	spaceship         *Spaceship
 }
 
-func (exhaustGas *ExhaustGas) Run() {
+func (exhaustGas *ExhaustGas) Run(ctx context.Context) {
 	views := []string{exhaustGas1, exhaustGas2}
 	ticker := time.NewTicker(exhaustGasTimeout * time.Millisecond)
 	defer ticker.Stop()
 	i := 0
 	for {
-		exhaustGas.exhaustGasChannel <- exhaustGas
+		select {
+		case exhaustGas.exhaustGasChannel <- exhaustGas:
+		case <-ctx.Done():
+			return
+		}
+
 		select {
 		case <-ticker.C:
 			exhaustGas.View = views[i]
@@ -54,12 +64,18 @@ func (exhaustGas *ExhaustGas) Run() {
 			}
 		default:
 		}
+
 		if exhaustGas.spaceship.collided {
 			exhaustGas.View = ""
 		}
 		exhaustGas.X = exhaustGas.spaceship.X + shipWidth/2 - 1
 		exhaustGas.Y = exhaustGas.spaceship.Y + shipHeight - 1
-		<-exhaustGas.UnblockCh
+
+		select {
+		case <-exhaustGas.UnblockCh:
+		case <-ctx.Done():
+			return
+		}
 		if !exhaustGas.spaceship.Active {
 			return
 		}

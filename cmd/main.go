@@ -8,6 +8,7 @@ import (
 	"runtime"
 	runtimeDebug "runtime/debug"
 	"runtime/pprof"
+	"time"
 
 	"github.com/AndreyAD1/spaceship/internal/application"
 	"github.com/AndreyAD1/spaceship/internal/config"
@@ -50,6 +51,7 @@ func main() {
 			newLogger.Errorf("Error stack trace: %s", stackTrace)
 			fmt.Printf("Critical error: %s", stackTrace)
 		}
+		time.Sleep(time.Second)
 		newLogger.Debugf("final goroutine number: %v", runtime.NumGoroutine())
 	}()
 	app := application.NewApplication(newLogger)
@@ -57,6 +59,5 @@ func main() {
 	err = app.Run()
 	if err != nil {
 		newLogger.Error(err)
-		os.Exit(1)
 	}
 }

@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/AndreyAD1/spaceship/internal/services"
@@ -62,6 +63,7 @@ func (lev level) Run(
 		screenService,
 	)
 	services.GenerateShip(
+		ctx,
 		interactiveChannel,
 		screenService,
 		lifeChannel,
@@ -76,7 +78,7 @@ func (lev level) Run(
 	logger.Debug("start an event loop")
 	for {
 		if screenService.Exit() {
-			break
+			return fmt.Errorf("a user has stopped the game")
 		}
 		processInvulnerableObjects(starChannel, screenService)
 		shipCollisions, meteoriteCollisions = processInteractiveObjects(

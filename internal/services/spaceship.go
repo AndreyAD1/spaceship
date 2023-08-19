@@ -36,6 +36,7 @@ var emptyView string = string([]rune{
 })
 
 func GenerateShip(
+	ctx context.Context,
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
 	lifeChannel chan<- int,
@@ -65,8 +66,8 @@ func GenerateShip(
 		false,
 		invulnerableChannel,
 	}
-	go spaceship.Move()
-	go GenerateExhaustGas(&spaceship, invulnerableChannel)
+	go spaceship.Move(ctx)
+	go GenerateExhaustGas(ctx, &spaceship, invulnerableChannel)
 	return spaceship
 }
 
@@ -93,7 +94,7 @@ func (spaceship *Spaceship) getNewSpeed(
 	return newSpeed * frictionCoef
 }
 
-func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
+func (spaceship *Spaceship) applyAcceleration(ax, ay float64) {
 	spaceship.Vx = spaceship.getNewSpeed(spaceship.Vx, ax, frictionCoefficient)
 	spaceship.Vy = spaceship.getNewSpeed(spaceship.Vy, ay, frictionCoefficient)
 	newX := spaceship.X + spaceship.Vx
@@ -120,17 +121,17 @@ func (spaceship *Spaceship) apply_acceleration(ax, ay float64) {
 	spaceship.Y = newY
 }
 
-func (spaceship *Spaceship) Move() {
+func (spaceship *Spaceship) Move(ctx context.Context) {
 	for {
 		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
-			spaceship.apply_acceleration(-horizontalAcceleration, 0)
+			spaceship.applyAcceleration(-horizontalAcceleration, 0)
 		case GoRight:
-			spaceship.apply_acceleration(horizontalAcceleration, 0)
+			spaceship.applyAcceleration(horizontalAcceleration, 0)
 		case GoUp:
-			spaceship.apply_acceleration(0, -verticalAcceleration)
+			spaceship.applyAcceleration(0, -verticalAcceleration)
 		case GoDown:
-			spaceship.apply_acceleration(0, verticalAcceleration)
+			spaceship.applyAcceleration(0, verticalAcceleration)
 		case Shoot:
 			if !spaceship.collided {
 				go Shot(
@@ -141,16 +142,24 @@ func (spaceship *Spaceship) Move() {
 				)
 			}
 		case NoEvent:
-			spaceship.apply_acceleration(0, 0)
+			spaceship.applyAcceleration(0, 0)
 		}
 
+		var destinationChannel chan<- ScreenObject
 		if spaceship.collided {
-			spaceship.invulnerableChannel <- spaceship
+			destinationChannel = spaceship.invulnerableChannel
 		} else {
-			spaceship.Objects <- spaceship
+			destinationChannel = spaceship.Objects
+		}
+		select {
+		case destinationChannel <- spaceship:
+		case <-ctx.Done():
+			return
 		}
 
 		select {
+		case <-ctx.Done():
+			return
 		case <-spaceship.Cancel:
 			return
 		case <-spaceship.UnblockCh:
