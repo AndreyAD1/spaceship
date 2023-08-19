@@ -99,7 +99,12 @@ func (lev level) Run(
 				go services.DrawLabel(ctx, gameoverChannel, screenService, services.Win)
 			}
 			if !lev.isLastLevel && levelEnd == nil {
-				go services.DrawLabel(ctx, gameoverChannel, screenService, services.Next)
+				go services.DrawLabel(
+					ctx, 
+					gameoverChannel, 
+					screenService, 
+					services.NextLevel,
+				)
 				levelEnd = time.After(2 * time.Second)
 			}
 			gameIsOver = true
