@@ -45,13 +45,13 @@ func DrawLabel(
 	label FinalLabel,
 ) {
 	width, height := screenSvc.GetScreenSize()
-	labelRow := width/2 - label.width/2
-	labelColumn := height/2 - label.height/2
+	labelX := width/2 - label.width/2
+	labelY := height/2 - label.height/2 - 1
 	gameover := BaseObject{
 		false,
 		true,
-		float64(labelRow),
-		float64(labelColumn),
+		float64(labelX),
+		float64(labelY),
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		0.01,
 		label.view,

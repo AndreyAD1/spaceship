@@ -48,7 +48,7 @@ func GenerateShip(
 		false,
 		true,
 		float64(width) / 2,
-		float64(height) - shipHeight,
+		float64(height) - shipHeight - 3,
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		maxSpeed,
 		SpaceshipView,
