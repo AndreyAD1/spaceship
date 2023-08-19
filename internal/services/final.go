@@ -6,7 +6,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-
 const gameOverView string = `
  _____                         ______               
 / ____|                       /  __  \                
@@ -28,15 +27,16 @@ const nextLevelView string = `
 | .' / -_) \ /  _| | |__/ -_) V / -_) |_ _ _ 
 |_|\_\___/_\_\\__| |____\___|\_/\___|_(_|_|_)
 `
+
 type FinalLabel struct {
-	view string
-	width int
+	view   string
+	width  int
 	height int
 }
+
 var GameOver = FinalLabel{gameOverView, 54, 8}
 var Win = FinalLabel{winView, 44, 6}
 var NextLevel = FinalLabel{nextLevelView, 46, 5}
-
 
 func DrawLabel(
 	ctx context.Context,
@@ -45,8 +45,8 @@ func DrawLabel(
 	label FinalLabel,
 ) {
 	width, height := screenSvc.GetScreenSize()
-	labelRow := width / 2 - label.width / 2
-	labelColumn := height / 2 - label.height / 2
+	labelRow := width/2 - label.width/2
+	labelColumn := height/2 - label.height/2
 	gameover := BaseObject{
 		false,
 		true,

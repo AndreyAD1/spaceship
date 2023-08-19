@@ -100,9 +100,9 @@ func (lev level) Run(
 			}
 			if !lev.isLastLevel && levelEnd == nil {
 				go services.DrawLabel(
-					ctx, 
-					gameoverChannel, 
-					screenService, 
+					ctx,
+					gameoverChannel,
+					screenService,
 					services.NextLevel,
 				)
 				levelEnd = time.After(2 * time.Second)

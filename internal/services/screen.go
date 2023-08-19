@@ -75,17 +75,6 @@ func NewScreenService() (*ScreenService, error) {
 
 func (screenSvc *ScreenService) PollScreenEvents(ctx context.Context) {
 	logger := log.FromContext(ctx)
-	eventIsExit := func(event tcell.Event) bool {
-		if ev, ok := event.(*tcell.EventKey); ok {
-			logger.Debugf("receive a key event %v", ev.Key())
-			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
-				screenSvc.exitChannel <- struct{}{}
-				close(screenSvc.exitChannel)
-				return true
-			}
-		}
-		return false
-	}
 	events := make(chan tcell.Event)
 	quit := make(chan struct{})
 	go screenSvc.screen.ChannelEvents(events, quit)
@@ -96,25 +85,11 @@ func (screenSvc *ScreenService) PollScreenEvents(ctx context.Context) {
 			close(quit)
 			return
 		case event = <-events:
-			if eventIsExit(event) {
-				close(quit)
-				return
-			}
-			// collect all pending events at once to make a user controls swift
-			select {
-			case event = <-events:
-				if eventIsExit(event) {
-					close(quit)
-					return
-				}
-			default:
-			}
 		}
 		if ev, ok := event.(*tcell.EventKey); ok {
 			logger.Debugf("process a key event %v", ev.Key())
 			switch ev.Key() {
 			case tcell.KeyLeft:
-				logger.Debug("Left is pressed")
 				screenSvc.controlChannel <- GoLeft
 			case tcell.KeyRight:
 				screenSvc.controlChannel <- GoRight
@@ -127,6 +102,14 @@ func (screenSvc *ScreenService) PollScreenEvents(ctx context.Context) {
 				if ev.Rune() == ' ' {
 					screenSvc.controlChannel <- Shoot
 				}
+			case tcell.KeyEscape:
+				close(screenSvc.exitChannel)
+				close(quit)
+				return
+			case tcell.KeyCtrlC:
+				close(screenSvc.exitChannel)
+				close(quit)
+				return
 			}
 		}
 	}
