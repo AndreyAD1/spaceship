@@ -91,15 +91,15 @@ func (lev level) Run(
 		processInvulnerableObjects(invulnerableChannel, screenService)
 
 		if shipCollisions >= lev.lifes && !gameIsOver {
-			go services.DrawGameOver(gameoverChannel, screenService)
+			go services.DrawLabel(ctx, gameoverChannel, screenService, services.GameOver)
 			gameIsOver = true
 		}
 		if meteoriteCollisions >= lev.meteoriteGoal && !gameIsOver {
 			if lev.isLastLevel {
-				go services.DrawWin(gameoverChannel, screenService)
+				go services.DrawLabel(ctx, gameoverChannel, screenService, services.Win)
 			}
 			if !lev.isLastLevel && levelEnd == nil {
-				go services.DrawNextLevel(gameoverChannel, screenService)
+				go services.DrawLabel(ctx, gameoverChannel, screenService, services.Next)
 				levelEnd = time.After(2 * time.Second)
 			}
 			gameIsOver = true
@@ -117,8 +117,6 @@ func (lev level) Run(
 		time.Sleep(lev.frameTimeout)
 		screenService.ClearScreen()
 	}
-	logger.Debug("finish the event loop")
-	return nil
 }
 
 func processInvulnerableObjects(

@@ -51,7 +51,7 @@ func main() {
 			newLogger.Errorf("Error stack trace: %s", stackTrace)
 			fmt.Printf("Critical error: %s", stackTrace)
 		}
-		time.Sleep(time.Second)
+		time.Sleep(1 * time.Second)
 		newLogger.Debugf("final goroutine number: %v", runtime.NumGoroutine())
 	}()
 	app := application.NewApplication(newLogger)
