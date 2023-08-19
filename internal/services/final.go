@@ -7,6 +7,7 @@ import (
 )
 
 type FinalLabel string
+
 const GameOver FinalLabel = `
  _____                         ______               
 / ____|                       /  __  \                
@@ -29,11 +30,10 @@ const Next FinalLabel = `
 |_|\_\___/_\_\\__| |____\___|\_/\___|_(_|_|_)
 `
 
-
 func DrawLabel(
-	ctx context.Context, 
-	channel chan<- *BaseObject, 
-	screenSvc *ScreenService, 
+	ctx context.Context,
+	channel chan<- *BaseObject,
+	screenSvc *ScreenService,
 	view FinalLabel,
 ) {
 	width, height := screenSvc.GetScreenSize()

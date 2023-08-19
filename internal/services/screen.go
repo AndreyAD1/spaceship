@@ -86,15 +86,28 @@ func (screenSvc *ScreenService) PollScreenEvents(ctx context.Context) {
 		}
 		return false
 	}
+	events := make(chan tcell.Event)
+	quit := make(chan struct{})
+	go screenSvc.screen.ChannelEvents(events, quit)
+	var event tcell.Event
 	for {
-		event := screenSvc.screen.PollEvent()
-		if eventIsExit(event) {
+		select {
+		case <-ctx.Done():
+			close(quit)
 			return
-		}
-		for screenSvc.screen.HasPendingEvent() {
-			event = screenSvc.screen.PollEvent()
+		case event = <-events:
 			if eventIsExit(event) {
+				close(quit)
 				return
+			}
+			// collect all pending events at once to make a user controls swift
+			select {
+			case event = <-events:
+				if eventIsExit(event) {
+					close(quit)
+					return
+				}
+			default:
 			}
 		}
 		if ev, ok := event.(*tcell.EventKey); ok {
