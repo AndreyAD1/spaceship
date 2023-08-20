@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"flag"
@@ -15,7 +15,7 @@ import (
 	"github.com/caarlos0/env/v7"
 )
 
-func main() {
+func run() {
 	debug := flag.String("debug", "", "run in a debug mode")
 	logFile := flag.String("log_file", "", "write logs to this file")
 	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to file")
