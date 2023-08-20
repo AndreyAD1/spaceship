@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 var debug *bool
 var logFile *string
 var cpuProfile *string
@@ -18,7 +17,7 @@ var rootCmd = &cobra.Command{
 	Long: `This is an old-fashioned console game. 
 A user controls a spaceship flying through a meteor shower. 
 A user's goal is to destroy meteorites and not collide with them.`,
-	Run: run,
+	Run: func(cmd *cobra.Command, args []string) { run() },
 }
 
 func Execute() {
@@ -32,17 +31,15 @@ func Execute() {
 func init() {
 	debug = rootCmd.Flags().BoolP("debug", "d", false, "Run in a debug mode")
 	logFile = rootCmd.Flags().StringP(
-		"log_file", 
-		"l", 
-		"", 
+		"log_file",
+		"l",
+		"",
 		"write logs to this file",
 	)
 	cpuProfile = rootCmd.Flags().StringP(
-		"cpuprofile", 
-		"c", 
-		"", 
+		"cpuprofile",
+		"c",
+		"",
 		"write a cpu profile to this file",
 	)
 }
-
-

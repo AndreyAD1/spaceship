@@ -12,10 +12,9 @@ import (
 	"github.com/AndreyAD1/spaceship/internal/config"
 	"github.com/AndreyAD1/spaceship/internal/logger"
 	"github.com/caarlos0/env/v7"
-	"github.com/spf13/cobra"
 )
 
-func run(cmd *cobra.Command, args []string) {
+func run() {
 	configuration := config.StartupConfig{}
 	err := env.Parse(&configuration)
 	if err != nil {
