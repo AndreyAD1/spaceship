@@ -125,7 +125,11 @@ func (meteorite *Meteorite) Move(ctx context.Context) {
 			break
 		}
 		meteorite.Y = newY
-		meteorite.Objects <- meteorite
+		select {
+		case <-ctx.Done():
+			return
+		case meteorite.Objects <- meteorite:
+		}
 
 		select {
 		case <-ctx.Done():
