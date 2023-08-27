@@ -21,7 +21,7 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 		initialY,
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		speed,
-		services.MeteoriteView,
+		services.MeteoriteView1,
 		make(chan struct{}),
 		make(chan struct{}),
 	}
@@ -83,7 +83,7 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 		initialY,
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		speed,
-		services.MeteoriteView,
+		services.MeteoriteView1,
 		make(chan struct{}),
 		make(chan struct{}),
 	}
@@ -121,7 +121,7 @@ func TestMeteorite_Collide(t *testing.T) {
 		0,
 		tcell.StyleDefault.Background(tcell.ColorReset),
 		1,
-		services.MeteoriteView,
+		services.MeteoriteView1,
 		make(chan struct{}),
 		make(chan struct{}),
 	}

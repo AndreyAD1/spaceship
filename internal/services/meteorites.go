@@ -9,20 +9,41 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const MeteoriteView = `  ___
+const MeteoriteView1 = `  ___
  /   \
 /     /
 \____/`
+const MeteoriteView2 = ` ____
+/    \
+\____/`
+ const MeteoriteView3 = `  __
+ /  \____
+/        \
+\         )
+ \_______/`
 
-var MeteoriteRuneView []rune = []rune{
+var MeteoriteRuneView1 []rune = []rune{
 	' ', ' ', '_', '_', '_', '\n',
 	' ', '/', 0x85, 0x85, 0x85, '\\', '\n',
 	'/', 0x85, 0x85, 0x85, 0x85, 0x85, '/', '\n',
 	'\\', '_', '_', '_', '_', '/',
 }
+var MeteoriteRuneView2 []rune = []rune{
+	' ', '_', '_', '_', '_', '\n',
+	'/', 0x85, 0x85, 0x85, 0x85, '\\', '\n',
+	'\\', '_', '_', '_', '_', '/', '\n',
+}
+var MeteoriteRuneView3 []rune = []rune{
+	' ', ' ', '_', '_', '\n',
+	' ', '/', 0x85, 0x85, '\\', '_', '_', '_', '_', '\n',
+	'/', 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, '\\', '\n',
+	'\\', 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, ')', '\n',
+	' ', '\\', '_', '_', '_', '_', '_', '_', '_', '/', '\n',
+}
 var maxMeteoriteWidth = 7
 var mutx sync.Mutex
 var destroyedMeteorites = 0
+var views = [][]rune{MeteoriteRuneView1, MeteoriteRuneView2, MeteoriteRuneView3}
 
 func GenerateMeteorites(
 	ctx context.Context,
@@ -54,6 +75,7 @@ Outer:
 				meteoritesOnUpperEdge[i] = nil
 			}
 		}
+		meteoriteView := views[rand.Intn(len(views))]
 		baseObject := BaseObject{
 			false,
 			true,
@@ -61,7 +83,7 @@ Outer:
 			-6,
 			meteoriteStyle,
 			0.02,
-			string(MeteoriteRuneView),
+			string(meteoriteView),
 			make(chan (struct{})),
 			make(chan (struct{})),
 		}
