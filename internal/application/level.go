@@ -43,7 +43,6 @@ func (lev level) Run(
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	menuChannel := make(chan services.ScreenObject)
-	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
 	var levelEnd <-chan time.Time
@@ -55,7 +54,7 @@ func (lev level) Run(
 		lev.lifes,
 		lev.meteoriteGoal,
 	)
-	services.GenerateStars(ctx, starChannel, screenService)
+	stars := services.GenerateStars(ctx, screenService)
 	go services.GenerateMeteorites(
 		ctx,
 		interactiveChannel,
@@ -79,7 +78,7 @@ func (lev level) Run(
 		if screenService.Exit() {
 			return fmt.Errorf("a user has stopped the game")
 		}
-		processInvulnerableObjects(starChannel, screenService)
+		processStaticObjects(stars, screenService)
 		shipCollisions, meteoriteCollisions = processInteractiveObjects2(
 			ctx,
 			interactiveChannel,
@@ -87,7 +86,6 @@ func (lev level) Run(
 			shipCollisions,
 			meteoriteCollisions,
 		)
-		// processInvulnerableObjects(invulnerableChannel, screenService)
 
 		if shipCollisions >= lev.lifes && !gameIsOver {
 			go services.DrawLabel(ctx, gameoverChannel, screenService, services.GameOver)
@@ -124,6 +122,16 @@ func (lev level) Run(
 	}
 }
 
+func processStaticObjects(
+	staticObjects []services.ScreenObject,
+	screenSvc *services.ScreenService,
+) {
+	for _, object := range staticObjects {
+		screenSvc.Draw(object)
+		object.Unblock()
+	}
+}
+
 func processInvulnerableObjects(
 	invulnerableChan chan services.ScreenObject,
 	screenSvc *services.ScreenService,
@@ -139,72 +147,6 @@ func processInvulnerableObjects(
 				o.Unblock()
 			}
 			return
-		}
-	}
-}
-
-func processInteractiveObjects(
-	ctx context.Context,
-	objectChannel chan services.ScreenObject,
-	screenService *services.ScreenService,
-	spaceshipCollisions, destroyedMeteorites int,
-) (int, int) {
-	screenObjects, interObjects := getScreenObjects(objectChannel, screenService)
-	for y, row := range screenObjects {
-		for x, objects := range row {
-			if len(objects) == 0 {
-				continue
-			}
-			if len(objects) == 1 && !objects[0].GetDrawStatus() {
-				screenService.Draw(objects[0])
-				objects[0].MarkDrawn()
-				screenObjects[y][x] = []services.ScreenObject{}
-				continue
-			}
-			// collision occurred
-			if len(objects) > 1 {
-				for _, object := range objects {
-					is_collided := object.Collide(ctx, objects)
-					if is_collided {
-						switch object.(type) {
-						case *services.Spaceship:
-							spaceshipCollisions++
-						case *services.Meteorite:
-							destroyedMeteorites++
-						}
-					}
-				}
-			}
-		}
-	}
-
-	for _, object := range interObjects {
-		if object.IsActive() {
-			object.Unblock()
-		}
-	}
-	return spaceshipCollisions, destroyedMeteorites
-}
-
-func getScreenObjects(
-	objectChannel chan services.ScreenObject,
-	screenService *services.ScreenService,
-) ([][][]services.ScreenObject, []services.ScreenObject) {
-	screenObjects := screenService.NewObjectList()
-	interObjects := []services.ScreenObject{}
-	for {
-		select {
-		case obj := <-objectChannel:
-			interObjects = append(interObjects, obj)
-			coordinates, _ := obj.GetViewCoordinates()
-			for _, coord_pair := range coordinates {
-				x, y := coord_pair[0], coord_pair[1]
-				if screenService.IsInsideScreen(float64(x), float64(y)) {
-					screenObjects[y][x] = append(screenObjects[y][x], obj)
-				}
-			}
-		default:
-			return screenObjects, interObjects
 		}
 	}
 }
