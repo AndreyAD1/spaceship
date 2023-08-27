@@ -26,6 +26,7 @@ func GenerateMenu(
 		"♥",
 		make(chan (struct{})),
 		make(chan (struct{})),
+		false,
 	}
 	lifeChannel := make(chan int, initialLifeNumber)
 	lifeCounter := LifeCounter{baseObject, initialLifeNumber, lifeChannel}
@@ -52,6 +53,7 @@ func runMeteoriteCounter(
 		fmt.Sprintf(template, levelName, destroyedMeteorites, winGoal),
 		make(chan (struct{})),
 		make(chan (struct{})),
+		false,
 	}
 	for {
 		select {

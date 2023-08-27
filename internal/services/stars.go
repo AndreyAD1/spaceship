@@ -34,6 +34,7 @@ func GenerateStars(ctx context.Context, starsChan chan ScreenObject, screenSvc *
 			"*",
 			make(chan (struct{})),
 			make(chan (struct{})),
+			false,
 		}
 		star := Star{baseObject, starsChan}
 		go star.Blink(ctx)

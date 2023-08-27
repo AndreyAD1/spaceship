@@ -19,18 +19,20 @@ type ScreenObject interface {
 	GetDrawStatus() bool
 	MarkDrawn()
 	Collide(context.Context, []ScreenObject) bool
+	IsVulnerable() bool
 }
 
 type BaseObject struct {
-	IsDrawn   bool
-	Active    bool
-	X         float64 // a column of left upper corner
-	Y         float64 // a row of left upper corner
-	Style     tcell.Style
-	MaxSpeed  float64 // Cells per iteration. Max speed = 1
-	View      string
-	Cancel    chan (struct{})
-	UnblockCh chan (struct{})
+	IsDrawn    bool
+	Active     bool
+	X          float64 // a column of left upper corner
+	Y          float64 // a row of left upper corner
+	Style      tcell.Style
+	MaxSpeed   float64 // Cells per iteration. Max speed = 1
+	View       string
+	Cancel     chan (struct{})
+	UnblockCh  chan (struct{})
+	Vulnerable bool
 }
 
 func (baseObject *BaseObject) Deactivate() {
@@ -46,6 +48,10 @@ func (baseObject *BaseObject) Deactivate() {
 
 func (baseObject *BaseObject) IsActive() bool {
 	return baseObject.Active
+}
+
+func (baseObject *BaseObject) IsVulnerable() bool {
+	return baseObject.Vulnerable
 }
 
 func (baseObject *BaseObject) Unblock() {

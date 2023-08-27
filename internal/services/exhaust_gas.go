@@ -32,6 +32,7 @@ func GenerateExhaustGas(
 		exhaustGas1,
 		make(chan struct{}),
 		make(chan struct{}),
+		false,
 	}
 	exhaustGas := ExhaustGas{baseObject, ch, spaceship}
 	go exhaustGas.Run(ctx)
@@ -65,7 +66,7 @@ func (exhaustGas *ExhaustGas) Run(ctx context.Context) {
 		default:
 		}
 
-		if exhaustGas.spaceship.collided {
+		if !exhaustGas.spaceship.Vulnerable {
 			exhaustGas.View = ""
 		}
 		exhaustGas.X = exhaustGas.spaceship.X + shipWidth/2 - 1
@@ -77,6 +78,7 @@ func (exhaustGas *ExhaustGas) Run(ctx context.Context) {
 			return
 		}
 		if !exhaustGas.spaceship.Active {
+			exhaustGas.Active = false
 			return
 		}
 	}

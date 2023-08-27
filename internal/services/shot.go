@@ -17,6 +17,7 @@ func Shot(screenSvc *ScreenService, objects chan<- ScreenObject, x, y float64) {
 		"|",
 		make(chan struct{}),
 		make(chan struct{}),
+		true,
 	}
 	shot := Shell{baseObject, objects, screenSvc}
 	go shot.Move()

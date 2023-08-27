@@ -24,6 +24,7 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 		services.MeteoriteView1,
 		make(chan struct{}),
 		make(chan struct{}),
+		true,
 	}
 	MockedScreenSvc := mocks.NewScreenSvc(t)
 	MockedScreenSvc.On("GetScreenSize").Return(100, 100)
@@ -86,6 +87,7 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 		services.MeteoriteView1,
 		make(chan struct{}),
 		make(chan struct{}),
+		true,
 	}
 	MockedScreenSvc := mocks.NewScreenSvc(t)
 	MockedScreenSvc.On("GetScreenSize").Return(1, 1)
@@ -124,6 +126,7 @@ func TestMeteorite_Collide(t *testing.T) {
 		services.MeteoriteView1,
 		make(chan struct{}),
 		make(chan struct{}),
+		true,
 	}
 	objectChannel := make(chan<- services.ScreenObject)
 	screenMock := mocks.NewScreenSvc(t)

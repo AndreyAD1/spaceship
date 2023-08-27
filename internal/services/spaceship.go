@@ -40,7 +40,6 @@ func GenerateShip(
 	objects chan ScreenObject,
 	screenSvc *ScreenService,
 	lifeChannel chan<- int,
-	invulnerableChannel chan ScreenObject,
 	initialLifeNumber int,
 ) Spaceship {
 	width, height := screenSvc.GetScreenSize()
@@ -54,6 +53,7 @@ func GenerateShip(
 		SpaceshipView,
 		make(chan struct{}),
 		make(chan struct{}),
+		true,
 	}
 	spaceship := Spaceship{
 		baseObject,
@@ -63,24 +63,20 @@ func GenerateShip(
 		0,
 		initialLifeNumber,
 		lifeChannel,
-		false,
-		invulnerableChannel,
 	}
 	go spaceship.Move(ctx)
-	go GenerateExhaustGas(ctx, &spaceship, invulnerableChannel)
+	go GenerateExhaustGas(ctx, &spaceship, objects)
 	return spaceship
 }
 
 type Spaceship struct {
 	BaseObject
-	Objects             chan<- ScreenObject
-	ScreenSvc           *ScreenService
-	Vx                  float64
-	Vy                  float64
-	Lifes               int
-	lifeChannel         chan<- int
-	collided            bool
-	invulnerableChannel chan<- ScreenObject
+	Objects     chan<- ScreenObject
+	ScreenSvc   *ScreenService
+	Vx          float64
+	Vy          float64
+	Lifes       int
+	lifeChannel chan<- int
 }
 
 func (spaceship *Spaceship) getNewSpeed(
@@ -122,6 +118,12 @@ func (spaceship *Spaceship) applyAcceleration(ax, ay float64) {
 }
 
 func (spaceship *Spaceship) Move(ctx context.Context) {
+	select {
+	case spaceship.Objects <- spaceship:
+	case <-ctx.Done():
+		return
+	}
+
 	for {
 		switch event := spaceship.ScreenSvc.GetControlEvent(); event {
 		case GoLeft:
@@ -133,7 +135,7 @@ func (spaceship *Spaceship) Move(ctx context.Context) {
 		case GoDown:
 			spaceship.applyAcceleration(0, verticalAcceleration)
 		case Shoot:
-			if !spaceship.collided {
+			if spaceship.Vulnerable {
 				go Shot(
 					spaceship.ScreenSvc,
 					spaceship.Objects,
@@ -143,18 +145,6 @@ func (spaceship *Spaceship) Move(ctx context.Context) {
 			}
 		case NoEvent:
 			spaceship.applyAcceleration(0, 0)
-		}
-
-		var destinationChannel chan<- ScreenObject
-		if spaceship.collided {
-			destinationChannel = spaceship.invulnerableChannel
-		} else {
-			destinationChannel = spaceship.Objects
-		}
-		select {
-		case destinationChannel <- spaceship:
-		case <-ctx.Done():
-			return
 		}
 
 		select {
@@ -168,10 +158,10 @@ func (spaceship *Spaceship) Move(ctx context.Context) {
 }
 
 func (spaceship *Spaceship) Collide(ctx context.Context, objects []ScreenObject) bool {
-	if spaceship.collided {
+	if !spaceship.Vulnerable {
 		return false
 	}
-	spaceship.collided = true
+	spaceship.Vulnerable = true
 	spaceship.Lifes--
 	spaceship.lifeChannel <- spaceship.Lifes
 	if spaceship.Lifes > 0 {
@@ -179,7 +169,7 @@ func (spaceship *Spaceship) Collide(ctx context.Context, objects []ScreenObject)
 		return true
 	}
 	spaceship.Deactivate()
-	go Explode(ctx, spaceship.invulnerableChannel, spaceship.X, spaceship.Y)
+	go Explode(ctx, spaceship.Objects, spaceship.X, spaceship.Y)
 	return true
 }
 
@@ -197,7 +187,7 @@ func (spaceship *Spaceship) Blink() {
 			i++
 		case <-abort:
 			spaceship.View = SpaceshipView
-			spaceship.collided = false
+			spaceship.Vulnerable = false
 			return
 		}
 	}
