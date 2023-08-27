@@ -49,13 +49,12 @@ func (exhaustGas *ExhaustGas) Run(ctx context.Context) {
 	ticker := time.NewTicker(exhaustGasTimeout * time.Millisecond)
 	defer ticker.Stop()
 	i := 0
+	select {
+	case exhaustGas.exhaustGasChannel <- exhaustGas:
+	case <-ctx.Done():
+		return
+	}
 	for {
-		select {
-		case exhaustGas.exhaustGasChannel <- exhaustGas:
-		case <-ctx.Done():
-			return
-		}
-
 		select {
 		case <-ticker.C:
 			exhaustGas.View = views[i]
