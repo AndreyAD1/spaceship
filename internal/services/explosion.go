@@ -49,14 +49,14 @@ func Explode(ctx context.Context, ch chan<- ScreenObject, XCentre, YCentre float
 		make(chan struct{}),
 		false,
 	}
-	ticker := time.NewTicker(explosionFrameTimeout)
-	defer ticker.Stop()
-
 	select {
 	case <-ctx.Done():
 		return
 	case ch <- &explosion:
 	}
+	ticker := time.NewTicker(explosionFrameTimeout)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ticker.C:
@@ -76,7 +76,6 @@ func Explode(ctx context.Context, ch chan<- ScreenObject, XCentre, YCentre float
 		case <-ctx.Done():
 			return
 		case <-explosion.UnblockCh:
-			explosion.Deactivate()
 		}
 	}
 }
