@@ -161,7 +161,7 @@ func (spaceship *Spaceship) Collide(ctx context.Context, objects []ScreenObject)
 	if !spaceship.Vulnerable {
 		return false
 	}
-	spaceship.Vulnerable = true
+	spaceship.Vulnerable = false
 	spaceship.Lifes--
 	spaceship.lifeChannel <- spaceship.Lifes
 	if spaceship.Lifes > 0 {
@@ -187,7 +187,7 @@ func (spaceship *Spaceship) Blink() {
 			i++
 		case <-abort:
 			spaceship.View = SpaceshipView
-			spaceship.Vulnerable = false
+			spaceship.Vulnerable = true
 			return
 		}
 	}
