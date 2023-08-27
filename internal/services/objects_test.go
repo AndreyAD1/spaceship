@@ -84,7 +84,7 @@ func TestBaseObject_GetViewCoordinates(t *testing.T) {
 			fields{
 				2.3,
 				-1.4,
-				services.MeteoriteView,
+				services.MeteoriteView1,
 			},
 			[][]int{
 				{4, -1}, {5, -1}, {6, -1},

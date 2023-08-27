@@ -9,20 +9,50 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const MeteoriteView = `  ___
+const MeteoriteView1 = `  ___
  /   \
 /     /
 \____/`
+const MeteoriteView2 = ` ____
+/    \
+\____/`
+const MeteoriteView3 = `  ______
+ /       \
+/        )
+\    ____/
+ \__/`
 
-var MeteoriteRuneView []rune = []rune{
+var MeteoriteRuneView1 []rune = []rune{
 	' ', ' ', '_', '_', '_', '\n',
 	' ', '/', 0x85, 0x85, 0x85, '\\', '\n',
 	'/', 0x85, 0x85, 0x85, 0x85, 0x85, '/', '\n',
 	'\\', '_', '_', '_', '_', '/',
 }
-var maxMeteoriteWidth = 7
+var MeteoriteRuneView2 []rune = []rune{
+	' ', '_', '_', '_', '_', '\n',
+	'/', 0x85, 0x85, 0x85, 0x85, '\\', '\n',
+	'\\', '_', '_', '_', '_', '/', '\n',
+}
+var MeteoriteRuneView3 []rune = []rune{
+	' ', ' ', '_', '_', '_', '_', '_', '_', '\n',
+	' ', '/', 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, '\\', '\n',
+	'/', 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, 0x85, ')', '\n',
+	'\\', 0x85, 0x85, 0x85, 0x85, '_', '_', '_', '_', '/', '\n',
+	' ', '\\', '_', '_', '/', '\n',
+}
+
+type meteoriteProps struct {
+	view     []rune
+	maxWidth int
+}
+
 var mutx sync.Mutex
 var destroyedMeteorites = 0
+var meteorites = []meteoriteProps{
+	{MeteoriteRuneView1, 7},
+	{MeteoriteRuneView2, 6},
+	{MeteoriteRuneView3, 10},
+}
 
 func GenerateMeteorites(
 	ctx context.Context,
@@ -46,7 +76,8 @@ Outer:
 			continue
 		}
 		column := rand.Intn(width - 2)
-		for i := column; i < column+maxMeteoriteWidth && i < width; i++ {
+		meteoriteType := meteorites[rand.Intn(len(meteorites))]
+		for i := column; i < column+meteoriteType.maxWidth && i < width; i++ {
 			if meteorite := meteoritesOnUpperEdge[i]; meteorite != nil {
 				if meteorite.Y <= 1 && meteorite.Active {
 					continue Outer
@@ -61,7 +92,7 @@ Outer:
 			-6,
 			meteoriteStyle,
 			0.02,
-			string(MeteoriteRuneView),
+			string(meteoriteType.view),
 			make(chan (struct{})),
 			make(chan (struct{})),
 		}
@@ -71,7 +102,7 @@ Outer:
 			screenSvc,
 			explosions,
 		}
-		for i := column; i < column+maxMeteoriteWidth && i < width; i++ {
+		for i := column; i < column+meteoriteType.maxWidth && i < width; i++ {
 			meteoritesOnUpperEdge[i] = &meteorite
 		}
 		go meteorite.Move(ctx)
