@@ -23,6 +23,7 @@ type level struct {
 	isLastLevel   bool
 	frameTimeout  time.Duration
 }
+var interactiveObjects map[services.ScreenObject]bool
 
 func NewLevel(config levelConfig, frameTimeout time.Duration) level {
 	newLevel := level{
@@ -73,6 +74,7 @@ func (lev level) Run(
 
 	logger := log.FromContext(ctx)
 	logger.Debug("start an event loop")
+	interactiveObjects = make(map[services.ScreenObject]bool)
 	for {
 		if screenService.Exit() {
 			return fmt.Errorf("a user has stopped the game")
@@ -111,6 +113,7 @@ func (lev level) Run(
 		case gameover := <-gameoverChannel:
 			screenService.Draw(gameover)
 		case <-levelEnd:
+			logger.Debugf("finish the level")
 			return nil
 		default:
 		}
@@ -205,8 +208,6 @@ func getScreenObjects(
 		}
 	}
 }
-
-var interactiveObjects = make(map[services.ScreenObject]bool)
 
 func collectNewDeleteOld(
 	objectChannel chan services.ScreenObject,
