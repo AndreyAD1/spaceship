@@ -61,7 +61,10 @@ func Explode(ctx context.Context, ch chan<- ScreenObject, XCentre, YCentre float
 		case <-ticker.C:
 			frameIndex++
 			if frameIndex >= len(explosionFrames) {
-				<-explosion.UnblockCh
+				select {
+				case <-ctx.Done():
+				case <-explosion.UnblockCh:
+				}
 				return
 			}
 			explosion.View = explosionFrames[frameIndex]
