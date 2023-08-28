@@ -137,6 +137,7 @@ func (spaceship *Spaceship) Move(ctx context.Context) {
 		case Shoot:
 			if spaceship.Vulnerable {
 				go Shot(
+					ctx,
 					spaceship.ScreenSvc,
 					spaceship.Objects,
 					spaceship.X+2,

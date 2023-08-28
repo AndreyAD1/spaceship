@@ -6,7 +6,12 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func Shot(screenSvc *ScreenService, objects chan<- ScreenObject, x, y float64) {
+func Shot(
+	ctx context.Context, 
+	screenSvc *ScreenService, 
+	objects chan<- ScreenObject, 
+	x, y float64,
+) {
 	baseObject := BaseObject{
 		false,
 		true,
@@ -20,7 +25,7 @@ func Shot(screenSvc *ScreenService, objects chan<- ScreenObject, x, y float64) {
 		true,
 	}
 	shot := Shell{baseObject, objects, screenSvc}
-	go shot.Move()
+	go shot.Move(ctx)
 }
 
 type Shell struct {
@@ -29,7 +34,12 @@ type Shell struct {
 	ScreenSvc *ScreenService
 }
 
-func (shell *Shell) Move() {
+func (shell *Shell) Move(ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		return
+	case shell.Objects <- shell:
+	}
 	for {
 		newY := shell.Y - shell.MaxSpeed
 		if !shell.ScreenSvc.IsInsideScreen(shell.X, newY) {
@@ -37,7 +47,6 @@ func (shell *Shell) Move() {
 			break
 		}
 		shell.Y = newY
-		shell.Objects <- shell
 		select {
 		case <-shell.Cancel:
 			shell.Active = false
