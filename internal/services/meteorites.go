@@ -46,7 +46,7 @@ type meteoriteProps struct {
 	maxWidth int
 }
 
-var mutx sync.Mutex
+var meteoriteMutx sync.RWMutex
 var destroyedMeteorites = 0
 var meteorites = []meteoriteProps{
 	{MeteoriteRuneView1, 7},
@@ -153,8 +153,8 @@ func (meteorite *Meteorite) Collide(ctx context.Context, objects []ScreenObject)
 	if !allObjectsAreMeteorsOrSpaceship {
 		meteorite.Deactivate()
 		go Explode(ctx, meteorite.Objects, meteorite.X, meteorite.Y)
-		mutx.Lock()
-		defer mutx.Unlock()
+		meteoriteMutx.Lock()
+		defer meteoriteMutx.Unlock()
 		destroyedMeteorites++
 		return true
 	}

@@ -13,9 +13,22 @@ func GenerateMenu(
 	levelName string,
 	initialLifeNumber,
 	winGoal int,
-) chan int {
-	go runMeteoriteCounter(ctx, menuChan, levelName, winGoal)
+) ([]ScreenObject, chan int) {
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
+	template := "%v\nDestroyed Meteorites: %v/%v"
+	menu := BaseObject{
+		false,
+		true,
+		3,
+		1,
+		style,
+		0,
+		fmt.Sprintf(template, levelName, destroyedMeteorites, winGoal),
+		make(chan (struct{})),
+		make(chan (struct{})),
+		false,
+	}
+	go runMeteoriteCounter(ctx, &menu, template, levelName, winGoal)
 	baseObject := BaseObject{
 		false,
 		true,
@@ -32,37 +45,20 @@ func GenerateMenu(
 	lifeCounter := LifeCounter{baseObject, initialLifeNumber, lifeChannel}
 	lifeCounter.UpdateCounterView(initialLifeNumber)
 	go lifeCounter.Run(ctx, menuChan)
-	return lifeChannel
+	return []ScreenObject{&menu, &lifeCounter}, lifeChannel
 }
 
 func runMeteoriteCounter(
 	ctx context.Context,
-	menuChan chan ScreenObject,
+	menu *BaseObject,
+	template string,
 	levelName string,
 	winGoal int,
 ) {
-	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
-	template := "%v\nDestroyed Meteorites: %v/%v"
-	menu := BaseObject{
-		false,
-		true,
-		3,
-		1,
-		style,
-		0,
-		fmt.Sprintf(template, levelName, destroyedMeteorites, winGoal),
-		make(chan (struct{})),
-		make(chan (struct{})),
-		false,
-	}
 	for {
-		select {
-		case menuChan <- &menu:
-		case <-ctx.Done():
-			return
-		}
-
+		meteoriteMutx.RLock()
 		menu.View = fmt.Sprintf(template, levelName, destroyedMeteorites, winGoal)
+		meteoriteMutx.RUnlock()
 
 		select {
 		case <-menu.UnblockCh:
@@ -81,12 +77,7 @@ type LifeCounter struct {
 func (counter *LifeCounter) Run(ctx context.Context, menuChannel chan<- ScreenObject) {
 	for {
 		select {
-		case menuChannel <- counter:
 		case <-ctx.Done():
-			return
-		}
-
-		select {
 		case lifeNumber := <-counter.lifeChannel:
 			counter.UpdateCounterView(lifeNumber)
 		default:

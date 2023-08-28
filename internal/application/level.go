@@ -47,7 +47,7 @@ func (lev level) Run(
 	gameoverChannel := make(chan *services.BaseObject)
 	var levelEnd <-chan time.Time
 
-	lifeChannel := services.GenerateMenu(
+	menus, lifeChannel := services.GenerateMenu(
 		ctx,
 		menuChannel,
 		lev.name,
@@ -79,7 +79,7 @@ func (lev level) Run(
 			return fmt.Errorf("a user has stopped the game")
 		}
 		processStaticObjects(stars, screenService)
-		shipCollisions, meteoriteCollisions = processInteractiveObjects2(
+		shipCollisions, meteoriteCollisions = processInteractiveObjects(
 			ctx,
 			interactiveChannel,
 			screenService,
@@ -115,7 +115,7 @@ func (lev level) Run(
 			return nil
 		default:
 		}
-		processInvulnerableObjects(menuChannel, screenService)
+		processStaticObjects(menus, screenService)
 		screenService.ShowScreen()
 		time.Sleep(lev.frameTimeout)
 		screenService.ClearScreen()
@@ -129,25 +129,6 @@ func processStaticObjects(
 	for _, object := range staticObjects {
 		screenSvc.Draw(object)
 		object.Unblock()
-	}
-}
-
-func processInvulnerableObjects(
-	invulnerableChan chan services.ScreenObject,
-	screenSvc *services.ScreenService,
-) {
-	invulnerableObjects := []services.ScreenObject{}
-	for {
-		select {
-		case obj := <-invulnerableChan:
-			screenSvc.Draw(obj)
-			invulnerableObjects = append(invulnerableObjects, obj)
-		default:
-			for _, o := range invulnerableObjects {
-				o.Unblock()
-			}
-			return
-		}
 	}
 }
 
@@ -187,7 +168,7 @@ Poll:
 	return processedObjects, invulnerableObjects
 }
 
-func processInteractiveObjects2(
+func processInteractiveObjects(
 	ctx context.Context,
 	objectChannel chan services.ScreenObject,
 	screenService *services.ScreenService,
