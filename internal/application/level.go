@@ -115,7 +115,7 @@ func (lev level) Run(
 			return nil
 		default:
 		}
-		processStaticObjects(menus, screenService)
+		processStaticObjects2(menus, screenService)
 		screenService.ShowScreen()
 		time.Sleep(lev.frameTimeout)
 		screenService.ClearScreen()
@@ -123,6 +123,15 @@ func (lev level) Run(
 }
 
 func processStaticObjects(
+	staticObjects []services.ScreenObject,
+	screenSvc *services.ScreenService,
+) {
+	for _, object := range staticObjects {
+		screenSvc.Draw(object)
+	}
+}
+
+func processStaticObjects2(
 	staticObjects []services.ScreenObject,
 	screenSvc *services.ScreenService,
 ) {

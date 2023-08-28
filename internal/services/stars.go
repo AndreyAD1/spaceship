@@ -59,6 +59,8 @@ func (star *Star) Blink(ctx context.Context) {
 	tickPhase := 0
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case <-ticker.C:
 			switch tickPhase {
 			case 0:
@@ -74,13 +76,6 @@ func (star *Star) Blink(ctx context.Context) {
 			if tickPhase > 3 {
 				tickPhase = 0
 			}
-		default:
-		}
-
-		select {
-		case <-ctx.Done():
-			return
-		case <-star.UnblockCh:
 		}
 	}
 }
