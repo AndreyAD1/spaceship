@@ -166,7 +166,7 @@ func (spaceship *Spaceship) Collide(ctx context.Context, objects []ScreenObject)
 	spaceship.Lifes--
 	spaceship.lifeChannel <- spaceship.Lifes
 	if spaceship.Lifes > 0 {
-		go spaceship.Blink()
+		go spaceship.Blink(ctx)
 		return true
 	}
 	spaceship.Deactivate()
@@ -174,7 +174,7 @@ func (spaceship *Spaceship) Collide(ctx context.Context, objects []ScreenObject)
 	return true
 }
 
-func (spaceship *Spaceship) Blink() {
+func (spaceship *Spaceship) Blink(ctx context.Context) {
 	views := []string{emptyView, SpaceshipView}
 	ticker := time.NewTicker(blinkTimeout * time.Millisecond)
 	defer ticker.Stop()
@@ -189,6 +189,8 @@ func (spaceship *Spaceship) Blink() {
 		case <-abort:
 			spaceship.View = SpaceshipView
 			spaceship.Vulnerable = true
+			return
+		case <-ctx.Done():
 			return
 		}
 	}
