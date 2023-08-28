@@ -132,7 +132,7 @@ func processStaticObjects(
 	}
 }
 
-func collectNewDeleteOld(
+func getScreenObjects(
 	objectChannel chan services.ScreenObject,
 	screenService *services.ScreenService,
 ) ([][][]services.ScreenObject, []services.ScreenObject) {
@@ -174,7 +174,7 @@ func processInteractiveObjects(
 	screenService *services.ScreenService,
 	spaceshipCollisions, destroyedMeteorites int,
 ) (int, int) {
-	active, passive := collectNewDeleteOld(objectChannel, screenService)
+	active, passive := getScreenObjects(objectChannel, screenService)
 	for y, row := range active {
 		for x, objects := range row {
 			if len(objects) == 0 {
