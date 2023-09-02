@@ -9,7 +9,7 @@ import (
 )
 
 func GenerateStars(
-	ctx context.Context, 
+	ctx context.Context,
 	screenSvc *ScreenService,
 ) []ScreenObject {
 	width, height := screenSvc.GetScreenSize()

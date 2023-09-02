@@ -23,6 +23,7 @@ type level struct {
 	isLastLevel   bool
 	frameTimeout  time.Duration
 }
+
 var interactiveObjects map[services.ScreenObject]bool
 
 func NewLevel(config levelConfig, frameTimeout time.Duration) level {
@@ -217,7 +218,7 @@ func processInteractiveObjects(
 	select {
 	case <-ctx.Done():
 		return spaceshipCollisions, destroyedMeteorites
-	case destroyedMeteoriteChannel<- destroyedMeteorites:
+	case destroyedMeteoriteChannel <- destroyedMeteorites:
 	}
 	return spaceshipCollisions, destroyedMeteorites
 }

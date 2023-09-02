@@ -17,9 +17,9 @@ func GenerateMenu(
 	style := tcell.StyleDefault.Background(tcell.ColorReset).Normal()
 	template := "%v\nDestroyed Meteorites: %v/%v\nLifes: %v"
 	initialView := fmt.Sprintf(
-		template, 
-		levelName, 
-		destroyedMeteorites, 
+		template,
+		levelName,
+		destroyedMeteorites,
 		winGoal,
 		getLifeView(initialLifeNumber),
 	)
@@ -51,16 +51,16 @@ func GenerateMenu(
 
 type Menu struct {
 	BaseObject
-	viewTemplate string
-	levelName string
-	lifeNumber int
-	winGoal int
+	viewTemplate        string
+	levelName           string
+	lifeNumber          int
+	winGoal             int
 	destroyedMeteorites int
 }
 
 func (menu *Menu) runMenu(
-	ctx context.Context, 
-	lifeChannel, 
+	ctx context.Context,
+	lifeChannel,
 	destroyedMeteoriteChannel <-chan int,
 ) {
 	for {
@@ -79,9 +79,9 @@ func (menu *Menu) runMenu(
 
 func (menu *Menu) getNewView() string {
 	newView := fmt.Sprintf(
-		menu.viewTemplate, 
-		menu.levelName, 
-		menu.destroyedMeteorites, 
+		menu.viewTemplate,
+		menu.levelName,
+		menu.destroyedMeteorites,
 		menu.winGoal,
 		getLifeView(menu.lifeNumber),
 	)
