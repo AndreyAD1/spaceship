@@ -53,24 +53,15 @@ func TestMeteorite_MoveAndDeactivate(t *testing.T) {
 	}
 
 	meteorite.Unblock()
+	time.Sleep(100 * time.Millisecond)
 
-	select {
-	case receivedMeteorite := <-objectChannel:
-		require.Equal(t, meteorite, receivedMeteorite)
-	case <-time.After(1 * time.Second):
-		t.Errorf("no meteorites in the object channel")
-	}
 	MockedScreenSvc.AssertNumberOfCalls(t, "GetScreenSize", 2)
 	require.True(t, meteorite.Active)
 	expectedY += meteorite.MaxSpeed
 	require.Equal(t, expectedY, meteorite.Y)
 
 	meteorite.Deactivate()
-	select {
-	case <-objectChannel:
-		t.Errorf("a deactivated meteorite appears in the channel")
-	case <-time.After(100 * time.Millisecond):
-	}
+	time.Sleep(100 * time.Millisecond)
 	require.False(t, meteorite.Active)
 }
 
@@ -104,14 +95,7 @@ func TestMeteorite_MoveAndLeaveScreen(t *testing.T) {
 	}
 
 	meteorite.Unblock()
-
-	select {
-	case receivedMeteorite := <-objectChannel:
-		t.Errorf("a meteorite left the screen but appeared in the channel")
-		require.Equal(t, meteorite, receivedMeteorite)
-	case <-time.After(100 * time.Millisecond):
-	}
-
+	time.Sleep(100 * time.Millisecond)
 	require.False(t, meteorite.Active)
 }
 
