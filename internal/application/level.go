@@ -47,7 +47,7 @@ func (lev level) Run(
 	gameoverChannel := make(chan *services.BaseObject)
 	var levelEnd <-chan time.Time
 
-	menus, lifeChannel := services.GenerateMenu(
+	menus, lifeChannel, destroyedMeteoriteChannel := services.GenerateMenu(
 		ctx,
 		menuChannel,
 		lev.name,
@@ -85,6 +85,7 @@ func (lev level) Run(
 			screenService,
 			shipCollisions,
 			meteoriteCollisions,
+			destroyedMeteoriteChannel,
 		)
 
 		if shipCollisions >= lev.lifes && !gameIsOver {
@@ -108,6 +109,8 @@ func (lev level) Run(
 		}
 
 		select {
+		case <-ctx.Done():
+			return fmt.Errorf("a forced level exit happened")
 		case gameover := <-gameoverChannel:
 			screenService.Draw(gameover)
 		case <-levelEnd:
@@ -115,7 +118,7 @@ func (lev level) Run(
 			return nil
 		default:
 		}
-		processStaticObjects2(menus, screenService)
+		processStaticObjects(menus, screenService)
 		screenService.ShowScreen()
 		time.Sleep(lev.frameTimeout)
 		screenService.ClearScreen()
@@ -128,16 +131,6 @@ func processStaticObjects(
 ) {
 	for _, object := range staticObjects {
 		screenSvc.Draw(object)
-	}
-}
-
-func processStaticObjects2(
-	staticObjects []services.ScreenObject,
-	screenSvc *services.ScreenService,
-) {
-	for _, object := range staticObjects {
-		screenSvc.Draw(object)
-		object.Unblock()
 	}
 }
 
@@ -182,6 +175,7 @@ func processInteractiveObjects(
 	objectChannel chan services.ScreenObject,
 	screenService *services.ScreenService,
 	spaceshipCollisions, destroyedMeteorites int,
+	destroyedMeteoriteChannel chan<- int,
 ) (int, int) {
 	active, passive := getScreenObjects(objectChannel, screenService)
 	for y, row := range active {
@@ -219,6 +213,11 @@ func processInteractiveObjects(
 		if object.IsActive() {
 			object.Unblock()
 		}
+	}
+	select {
+	case <-ctx.Done():
+		return spaceshipCollisions, destroyedMeteorites
+	case destroyedMeteoriteChannel<- destroyedMeteorites:
 	}
 	return spaceshipCollisions, destroyedMeteorites
 }
