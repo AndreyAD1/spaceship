@@ -7,9 +7,9 @@ import (
 )
 
 func Shot(
-	ctx context.Context, 
-	screenSvc *ScreenService, 
-	objects chan<- ScreenObject, 
+	ctx context.Context,
+	screenSvc *ScreenService,
+	objects chan<- ScreenObject,
 	x, y float64,
 ) {
 	baseObject := BaseObject{
