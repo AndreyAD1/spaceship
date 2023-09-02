@@ -47,21 +47,26 @@ func Explode(ctx context.Context, ch chan<- ScreenObject, XCentre, YCentre float
 		explosionFrames[frameIndex],
 		make(chan struct{}),
 		make(chan struct{}),
+		false,
+	}
+	select {
+	case <-ctx.Done():
+		return
+	case ch <- &explosion:
 	}
 	ticker := time.NewTicker(explosionFrameTimeout)
 	defer ticker.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case ch <- &explosion:
-		}
 
+	for {
 		select {
 		case <-ticker.C:
 			frameIndex++
 			if frameIndex >= len(explosionFrames) {
-				<-explosion.UnblockCh
+				select {
+				case <-ctx.Done():
+				case <-explosion.UnblockCh:
+					explosion.Deactivate()
+				}
 				return
 			}
 			explosion.View = explosionFrames[frameIndex]

@@ -8,13 +8,17 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func GenerateStars(ctx context.Context, starsChan chan ScreenObject, screenSvc *ScreenService) {
+func GenerateStars(
+	ctx context.Context, 
+	screenSvc *ScreenService,
+) []ScreenObject {
 	width, height := screenSvc.GetScreenSize()
 	screenSquare := width * height
 	usedCoords := make([][]bool, height)
 	for i := range usedCoords {
 		usedCoords[i] = make([]bool, width)
 	}
+	stars := []ScreenObject{}
 	for i := 0; i < screenSquare/15; i++ {
 		var starLine, starColumn int
 		for {
@@ -34,16 +38,18 @@ func GenerateStars(ctx context.Context, starsChan chan ScreenObject, screenSvc *
 			"*",
 			make(chan (struct{})),
 			make(chan (struct{})),
+			false,
 		}
-		star := Star{baseObject, starsChan}
+		star := Star{baseObject}
 		go star.Blink(ctx)
 		usedCoords[starLine][starColumn] = true
+		stars = append(stars, &star)
 	}
+	return stars
 }
 
 type Star struct {
 	BaseObject
-	StarChan chan<- ScreenObject
 }
 
 func (star *Star) Blink(ctx context.Context) {
@@ -55,10 +61,6 @@ func (star *Star) Blink(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case star.StarChan <- star:
-		}
-
-		select {
 		case <-ticker.C:
 			switch tickPhase {
 			case 0:
@@ -74,13 +76,6 @@ func (star *Star) Blink(ctx context.Context) {
 			if tickPhase > 3 {
 				tickPhase = 0
 			}
-		default:
-		}
-
-		select {
-		case <-ctx.Done():
-			return
-		case <-star.UnblockCh:
 		}
 	}
 }

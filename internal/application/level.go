@@ -23,6 +23,7 @@ type level struct {
 	isLastLevel   bool
 	frameTimeout  time.Duration
 }
+var interactiveObjects map[services.ScreenObject]bool
 
 func NewLevel(config levelConfig, frameTimeout time.Duration) level {
 	newLevel := level{
@@ -42,24 +43,21 @@ func (lev level) Run(
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	menuChannel := make(chan services.ScreenObject)
-	starChannel := make(chan services.ScreenObject)
 	interactiveChannel := make(chan services.ScreenObject)
 	gameoverChannel := make(chan *services.BaseObject)
-	invulnerableChannel := make(chan services.ScreenObject)
 	var levelEnd <-chan time.Time
 
-	lifeChannel := services.GenerateMenu(
+	menus, lifeChannel, destroyedMeteoriteChannel := services.GenerateMenu(
 		ctx,
 		menuChannel,
 		lev.name,
 		lev.lifes,
 		lev.meteoriteGoal,
 	)
-	services.GenerateStars(ctx, starChannel, screenService)
+	stars := services.GenerateStars(ctx, screenService)
 	go services.GenerateMeteorites(
 		ctx,
 		interactiveChannel,
-		invulnerableChannel,
 		screenService,
 	)
 	services.GenerateShip(
@@ -67,7 +65,6 @@ func (lev level) Run(
 		interactiveChannel,
 		screenService,
 		lifeChannel,
-		invulnerableChannel,
 		lev.lifes,
 	)
 	go screenService.PollScreenEvents(ctx)
@@ -76,19 +73,20 @@ func (lev level) Run(
 
 	logger := log.FromContext(ctx)
 	logger.Debug("start an event loop")
+	interactiveObjects = make(map[services.ScreenObject]bool)
 	for {
 		if screenService.Exit() {
 			return fmt.Errorf("a user has stopped the game")
 		}
-		processInvulnerableObjects(starChannel, screenService)
+		processStaticObjects(stars, screenService)
 		shipCollisions, meteoriteCollisions = processInteractiveObjects(
 			ctx,
 			interactiveChannel,
 			screenService,
 			shipCollisions,
 			meteoriteCollisions,
+			destroyedMeteoriteChannel,
 		)
-		processInvulnerableObjects(invulnerableChannel, screenService)
 
 		if shipCollisions >= lev.lifes && !gameIsOver {
 			go services.DrawLabel(ctx, gameoverChannel, screenService, services.GameOver)
@@ -111,36 +109,65 @@ func (lev level) Run(
 		}
 
 		select {
+		case <-ctx.Done():
+			return fmt.Errorf("a forced level exit happened")
 		case gameover := <-gameoverChannel:
 			screenService.Draw(gameover)
 		case <-levelEnd:
+			logger.Debugf("finish the level")
 			return nil
 		default:
 		}
-		processInvulnerableObjects(menuChannel, screenService)
+		processStaticObjects(menus, screenService)
 		screenService.ShowScreen()
 		time.Sleep(lev.frameTimeout)
 		screenService.ClearScreen()
 	}
 }
 
-func processInvulnerableObjects(
-	invulnerableChan chan services.ScreenObject,
+func processStaticObjects(
+	staticObjects []services.ScreenObject,
 	screenSvc *services.ScreenService,
 ) {
-	invulnerableObjects := []services.ScreenObject{}
+	for _, object := range staticObjects {
+		screenSvc.Draw(object)
+	}
+}
+
+func getScreenObjects(
+	objectChannel chan services.ScreenObject,
+	screenService *services.ScreenService,
+) ([][][]services.ScreenObject, []services.ScreenObject) {
+Poll:
 	for {
 		select {
-		case obj := <-invulnerableChan:
-			screenSvc.Draw(obj)
-			invulnerableObjects = append(invulnerableObjects, obj)
+		case newObject := <-objectChannel:
+			interactiveObjects[newObject] = true
 		default:
-			for _, o := range invulnerableObjects {
-				o.Unblock()
-			}
-			return
+			break Poll
 		}
 	}
+	processedObjects := screenService.NewObjectList()
+	invulnerableObjects := []services.ScreenObject{}
+
+	for object := range interactiveObjects {
+		if !object.IsActive() {
+			delete(interactiveObjects, object)
+			continue
+		}
+		if !object.IsVulnerable() {
+			invulnerableObjects = append(invulnerableObjects, object)
+			continue
+		}
+		coordinates, _ := object.GetViewCoordinates()
+		for _, coord_pair := range coordinates {
+			x, y := coord_pair[0], coord_pair[1]
+			if screenService.IsInsideScreen(float64(x), float64(y)) {
+				processedObjects[y][x] = append(processedObjects[y][x], object)
+			}
+		}
+	}
+	return processedObjects, invulnerableObjects
 }
 
 func processInteractiveObjects(
@@ -148,9 +175,10 @@ func processInteractiveObjects(
 	objectChannel chan services.ScreenObject,
 	screenService *services.ScreenService,
 	spaceshipCollisions, destroyedMeteorites int,
+	destroyedMeteoriteChannel chan<- int,
 ) (int, int) {
-	screenObjects, interObjects := getScreenObjects(objectChannel, screenService)
-	for y, row := range screenObjects {
+	active, passive := getScreenObjects(objectChannel, screenService)
+	for y, row := range active {
 		for x, objects := range row {
 			if len(objects) == 0 {
 				continue
@@ -158,7 +186,7 @@ func processInteractiveObjects(
 			if len(objects) == 1 && !objects[0].GetDrawStatus() {
 				screenService.Draw(objects[0])
 				objects[0].MarkDrawn()
-				screenObjects[y][x] = []services.ScreenObject{}
+				active[y][x] = []services.ScreenObject{}
 				continue
 			}
 			// collision occurred
@@ -177,34 +205,19 @@ func processInteractiveObjects(
 			}
 		}
 	}
+	for _, object := range passive {
+		screenService.Draw(object)
+	}
 
-	for _, object := range interObjects {
+	for object := range interactiveObjects {
 		if object.IsActive() {
 			object.Unblock()
 		}
 	}
-	return spaceshipCollisions, destroyedMeteorites
-}
-
-func getScreenObjects(
-	objectChannel chan services.ScreenObject,
-	screenService *services.ScreenService,
-) ([][][]services.ScreenObject, []services.ScreenObject) {
-	screenObjects := screenService.NewObjectList()
-	interObjects := []services.ScreenObject{}
-	for {
-		select {
-		case obj := <-objectChannel:
-			interObjects = append(interObjects, obj)
-			coordinates, _ := obj.GetViewCoordinates()
-			for _, coord_pair := range coordinates {
-				x, y := coord_pair[0], coord_pair[1]
-				if screenService.IsInsideScreen(float64(x), float64(y)) {
-					screenObjects[y][x] = append(screenObjects[y][x], obj)
-				}
-			}
-		default:
-			return screenObjects, interObjects
-		}
+	select {
+	case <-ctx.Done():
+		return spaceshipCollisions, destroyedMeteorites
+	case destroyedMeteoriteChannel<- destroyedMeteorites:
 	}
+	return spaceshipCollisions, destroyedMeteorites
 }

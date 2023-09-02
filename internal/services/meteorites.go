@@ -46,7 +46,7 @@ type meteoriteProps struct {
 	maxWidth int
 }
 
-var mutx sync.Mutex
+var meteoriteMutx sync.RWMutex
 var destroyedMeteorites = 0
 var meteorites = []meteoriteProps{
 	{MeteoriteRuneView1, 7},
@@ -57,7 +57,6 @@ var meteorites = []meteoriteProps{
 func GenerateMeteorites(
 	ctx context.Context,
 	events chan ScreenObject,
-	explosions chan ScreenObject,
 	screenSvc *ScreenService,
 ) {
 	destroyedMeteorites = 0
@@ -95,12 +94,12 @@ Outer:
 			string(meteoriteType.view),
 			make(chan (struct{})),
 			make(chan (struct{})),
+			true,
 		}
 		meteorite := Meteorite{
 			baseObject,
 			events,
 			screenSvc,
-			explosions,
 		}
 		for i := column; i < column+meteoriteType.maxWidth && i < width; i++ {
 			meteoritesOnUpperEdge[i] = &meteorite
@@ -111,12 +110,16 @@ Outer:
 
 type Meteorite struct {
 	BaseObject
-	Objects          chan<- ScreenObject
-	ScreenSvc        ScreenSvc
-	explosionChannel chan<- ScreenObject
+	Objects   chan<- ScreenObject
+	ScreenSvc ScreenSvc
 }
 
 func (meteorite *Meteorite) Move(ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		return
+	case meteorite.Objects <- meteorite:
+	}
 	for {
 		newY := meteorite.Y + meteorite.MaxSpeed
 		_, height := meteorite.ScreenSvc.GetScreenSize()
@@ -125,7 +128,6 @@ func (meteorite *Meteorite) Move(ctx context.Context) {
 			break
 		}
 		meteorite.Y = newY
-		meteorite.Objects <- meteorite
 
 		select {
 		case <-ctx.Done():
@@ -150,9 +152,9 @@ func (meteorite *Meteorite) Collide(ctx context.Context, objects []ScreenObject)
 	}
 	if !allObjectsAreMeteorsOrSpaceship {
 		meteorite.Deactivate()
-		go Explode(ctx, meteorite.explosionChannel, meteorite.X, meteorite.Y)
-		mutx.Lock()
-		defer mutx.Unlock()
+		go Explode(ctx, meteorite.Objects, meteorite.X, meteorite.Y)
+		meteoriteMutx.Lock()
+		defer meteoriteMutx.Unlock()
 		destroyedMeteorites++
 		return true
 	}

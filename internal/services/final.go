@@ -57,6 +57,7 @@ func DrawLabel(
 		label.view,
 		make(chan struct{}),
 		make(chan struct{}),
+		false,
 	}
 	for {
 		select {
